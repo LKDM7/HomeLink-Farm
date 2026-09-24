@@ -1,0 +1,25 @@
+{
+  "variants": {
+    "hanging=false,status=off": {
+      "model": "homelink_farm:block/copper_sprinkler_off"
+    },
+    "hanging=true,status=off": {
+      "model": "homelink_farm:block/copper_sprinkler_off",
+      "x": 180
+    },
+    "hanging=false,status=active": {
+      "model": "homelink_farm:block/copper_sprinkler_active"
+    },
+    "hanging=true,status=active": {
+      "model": "homelink_farm:block/copper_sprinkler_active",
+      "x": 180
+    },
+    "hanging=false,status=error": {
+      "model": "homelink_farm:block/copper_sprinkler_error"
+    },
+    "hanging=true,status=error": {
+      "model": "homelink_farm:block/copper_sprinkler_error",
+      "x": 180
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "parent": "homelink_farm:block/irrigation_pump_template",
+  "textures": {
+    "base": "homelink_farm:block/irrigation_pump_base",
+    "base_side": "homelink_farm:block/irrigation_pump_base_side",
+    "housing": "homelink_farm:block/irrigation_pump_housing",
+    "top": "homelink_farm:block/irrigation_pump_top",
+    "grille": "homelink_farm:block/irrigation_pump_grille",
+    "front": "homelink_farm:block/irrigation_pump_front_off",
+    "lights": "homelink_farm:block/irrigation_pump_lights",
+    "steel": "homelink_farm:block/device_steel",
+    "steel_dark": "homelink_farm:block/device_steel_dark",
+    "pipe": "homelink_farm:block/copper_pipe",
+    "pipe_end": "homelink_farm:block/copper_pipe_end"
+  }
+}

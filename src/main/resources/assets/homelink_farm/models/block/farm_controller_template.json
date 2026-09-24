@@ -1,0 +1,61 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "#steel"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 9, 15],
+      "faces": {
+        "north": { "texture": "#front" },
+        "south": { "texture": "#side" },
+        "east": { "texture": "#side" },
+        "west": { "texture": "#side" },
+        "up": { "texture": "#steel" },
+        "down": { "texture": "#steel_dark" }
+      }
+    },
+    {
+      "from": [1, 9, 1],
+      "to": [15, 10, 8],
+      "faces": {
+        "north": { "texture": "#steel_dark" },
+        "south": { "texture": "#steel_dark" },
+        "east": { "texture": "#steel_dark" },
+        "west": { "texture": "#steel_dark" },
+        "up": { "texture": "#deck" }
+      }
+    },
+    {
+      "from": [1, 10.01, 1],
+      "to": [15, 10.01, 8],
+      "shade": false,
+      "neoforge_data": { "block_light": 15, "sky_light": 15, "ambient_occlusion": false },
+      "faces": {
+        "up": { "texture": "#lights" }
+      }
+    },
+    {
+      "from": [2, 9, 9],
+      "to": [14, 16, 14],
+      "faces": {
+        "north": { "texture": "#screen" },
+        "south": { "texture": "#steel" },
+        "east": { "texture": "#steel" },
+        "west": { "texture": "#steel" },
+        "up": { "texture": "#steel" }
+      }
+    },
+    {
+      "from": [2, 9, 8.99],
+      "to": [14, 16, 8.99],
+      "shade": false,
+      "neoforge_data": { "block_light": 15, "sky_light": 15, "ambient_occlusion": false },
+      "faces": {
+        "north": { "texture": "#screen_lights" }
+      }
+    }
+  ]
+}

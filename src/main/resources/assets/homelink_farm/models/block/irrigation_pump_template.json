@@ -1,0 +1,97 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "#housing"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 2, 15],
+      "faces": {
+        "north": { "texture": "#base_side" },
+        "south": { "texture": "#base_side" },
+        "east": { "texture": "#base_side" },
+        "west": { "texture": "#base_side" },
+        "up": { "texture": "#base" },
+        "down": { "texture": "#steel_dark" }
+      }
+    },
+    {
+      "from": [3, 2, 3],
+      "to": [13, 12, 13],
+      "faces": {
+        "north": { "texture": "#housing" },
+        "south": { "texture": "#housing" },
+        "east": { "texture": "#housing" },
+        "west": { "texture": "#housing" },
+        "up": { "texture": "#top" },
+        "down": { "texture": "#steel_dark" }
+      }
+    },
+    {
+      "from": [4, 3, 1],
+      "to": [12, 11, 3],
+      "faces": {
+        "north": { "texture": "#front" },
+        "east": { "texture": "#steel" },
+        "west": { "texture": "#steel" },
+        "up": { "texture": "#steel" },
+        "down": { "texture": "#steel" }
+      }
+    },
+    {
+      "from": [4, 3, 0.99],
+      "to": [12, 11, 0.99],
+      "shade": false,
+      "neoforge_data": { "block_light": 15, "sky_light": 15, "ambient_occlusion": false },
+      "faces": {
+        "north": { "texture": "#lights" }
+      }
+    },
+    {
+      "from": [13, 4, 5],
+      "to": [13.5, 10, 11],
+      "faces": {
+        "east": { "texture": "#grille" },
+        "north": { "texture": "#steel" },
+        "south": { "texture": "#steel" },
+        "up": { "texture": "#steel" },
+        "down": { "texture": "#steel" }
+      }
+    },
+    {
+      "from": [2.5, 4, 5],
+      "to": [3, 10, 11],
+      "faces": {
+        "west": { "texture": "#grille" },
+        "north": { "texture": "#steel" },
+        "south": { "texture": "#steel" },
+        "up": { "texture": "#steel" },
+        "down": { "texture": "#steel" }
+      }
+    },
+    {
+      "from": [4.5, 12, 4.5],
+      "to": [11.5, 13, 11.5],
+      "faces": {
+        "north": { "texture": "#steel" },
+        "south": { "texture": "#steel" },
+        "east": { "texture": "#steel" },
+        "west": { "texture": "#steel" },
+        "up": { "texture": "#steel" }
+      }
+    },
+    {
+      "from": [5, 13, 5],
+      "to": [11, 16, 11],
+      "faces": {
+        "north": { "texture": "#pipe" },
+        "south": { "texture": "#pipe" },
+        "east": { "texture": "#pipe" },
+        "west": { "texture": "#pipe" },
+        "up": { "uv": [5, 5, 11, 11], "texture": "#pipe_end" }
+      }
+    }
+  ]
+}

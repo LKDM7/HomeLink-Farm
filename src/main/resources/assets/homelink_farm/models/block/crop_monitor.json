@@ -1,0 +1,14 @@
+{
+  "parent": "homelink_farm:block/crop_monitor_template",
+  "textures": {
+    "base": "homelink_farm:block/crop_monitor_base",
+    "front": "homelink_farm:block/crop_monitor_front",
+    "side": "homelink_farm:block/crop_monitor_side",
+    "top": "homelink_farm:block/crop_monitor_top",
+    "solar": "homelink_farm:block/crop_monitor_solar",
+    "lights": "homelink_farm:block/device_lights_off",
+    "beacon": "homelink_farm:block/crop_monitor_beacon_off",
+    "steel": "homelink_farm:block/device_steel",
+    "steel_dark": "homelink_farm:block/device_steel_dark"
+  }
+}

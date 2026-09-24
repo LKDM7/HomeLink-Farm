@@ -1,0 +1,16 @@
+{
+  "values": [
+    "homelink_farm:farm_controller",
+    "homelink_farm:crop_monitor",
+    "homelink_farm:irrigation_pump",
+    "homelink_farm:copper_sprinkler",
+    "homelink_farm:copper_pipe",
+    "homelink_farm:waxed_copper_pipe",
+    "homelink_farm:exposed_copper_pipe",
+    "homelink_farm:waxed_exposed_copper_pipe",
+    "homelink_farm:weathered_copper_pipe",
+    "homelink_farm:waxed_weathered_copper_pipe",
+    "homelink_farm:oxidized_copper_pipe",
+    "homelink_farm:waxed_oxidized_copper_pipe"
+  ]
+}

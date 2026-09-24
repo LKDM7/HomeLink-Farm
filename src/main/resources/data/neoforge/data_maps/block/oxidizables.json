@@ -1,0 +1,13 @@
+{
+  "values": {
+    "homelink_farm:copper_pipe": {
+      "next_oxidation_stage": "homelink_farm:exposed_copper_pipe"
+    },
+    "homelink_farm:exposed_copper_pipe": {
+      "next_oxidation_stage": "homelink_farm:weathered_copper_pipe"
+    },
+    "homelink_farm:weathered_copper_pipe": {
+      "next_oxidation_stage": "homelink_farm:oxidized_copper_pipe"
+    }
+  }
+}

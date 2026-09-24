@@ -1,0 +1,197 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.147'
+}
+
+version = mod_version
+group = mod_group_id
+
+repositories {
+    // HomeCore is consumed from Maven local (./gradlew publishToMavenLocal in the HomeCore repository).
+    mavenLocal()
+    mavenCentral()
+}
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+// In-game verification (GameTests) lives in its own source set and development-only mod;
+// it is never packaged in the release JAR.
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    gametestImplementation.extendsFrom implementation
+    gametestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+    implementation "fr.lkdm.homecore:homecore:${homecore_version}"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    // Tests reading project files (translations, sources) resolve them from here.
+    systemProperty 'homelink_farm.projectDir', project.projectDir.absolutePath
+    testLogging { events 'passed', 'failed', 'skipped' }
+}
+
+tasks.withType(Jar).configureEach {
+    from('LICENSE') { into 'META-INF' }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+    options.compilerArgs.addAll(['-Xlint:deprecation', '-Xlint:removal', '-Xlint:unchecked'])
+}
+
+neoForge {
+    version = project.neo_version
+    addModdingDependenciesTo sourceSets.gametest
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+        homelink_farm_gametest {
+            sourceSet(sourceSets.gametest)
+        }
+    }
+
+    runs {
+        client {
+            client()
+            loadedMods = [mods."${mod_id}"]
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            loadedMods = [mods."${mod_id}"]
+        }
+        // Headless GameTestServer: runs every HomeLink Farm GameTest then exits (non-zero on failure).
+        gameTestServer {
+            type = 'gameTestServer'
+            loadedMods = [mods."${mod_id}", mods.homelink_farm_gametest]
+            gameDirectory = file('build/gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'homelink_farm_gametest'
+        }
+        // Restart check: run with -PpersistencePass=write, then -PpersistencePass=read (same world, two processes).
+        persistence {
+            type = 'gameTestServer'
+            loadedMods = [mods."${mod_id}", mods.homelink_farm_gametest]
+            gameDirectory = file('build/persistence')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'homelink_farm_persistence'
+            systemProperty 'homelink_farm.persistencePass', providers.gradleProperty('persistencePass').getOrElse('read')
+        }
+        // Real client: builds a farm in a fresh flat world, drives the screens, saves screenshots, quits.
+        clientSmoke {
+            client()
+            loadedMods = [mods."${mod_id}", mods.homelink_farm_gametest]
+            gameDirectory = file('build/client-smoke')
+            systemProperty 'homelink_farm.clientSmoke', providers.gradleProperty('smokeScenario').getOrElse('full')
+        }
+        configureEach {
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+}
+
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    def replaceProperties = [
+        minecraft_version_range: minecraft_version_range,
+        neo_version_range      : neo_version_range,
+        loader_version_range   : loader_version_range,
+        homecore_version_range : homecore_version_range,
+        mod_id                 : mod_id,
+        mod_name               : mod_name,
+        mod_license            : mod_license,
+        mod_version            : mod_version,
+        mod_authors            : mod_authors,
+        mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into layout.buildDirectory.dir('generated/sources/modMetadata')
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+def gametestServerProperties = layout.buildDirectory.file('gametest/server.properties')
+tasks.named('runGameTestServer') {
+    doFirst {
+        def properties = gametestServerProperties.get().asFile
+        if (!properties.exists()) {
+            properties.parentFile.mkdirs()
+            properties.setText('', 'UTF-8')
+        }
+    }
+}
+
+def persistenceProperties = layout.buildDirectory.file('persistence/server.properties')
+tasks.named('runPersistence') {
+    doFirst {
+        def properties = persistenceProperties.get().asFile
+        if (!properties.exists()) {
+            properties.parentFile.mkdirs()
+            properties.setText('', 'UTF-8')
+        }
+    }
+}
+
+def clientSmokeLog = layout.buildDirectory.file('client-smoke/logs/latest.log')
+def clientSmokeOptions = layout.buildDirectory.file('client-smoke/options.txt')
+// Game language of the smoke client (e.g. -PsmokeLanguage=fr_fr to check the French translation in game).
+def smokeLanguage = providers.gradleProperty('smokeLanguage').getOrElse('en_us')
+tasks.named('runClientSmoke') {
+    doFirst {
+        def options = clientSmokeOptions.get().asFile
+        options.parentFile.mkdirs()
+        options.setText("onboardAccessibility:false\npauseOnLostFocus:false\nrenderDistance:4\nsimulationDistance:5\nmaxFps:60\nguiScale:2\nlang:${smokeLanguage}\n", 'UTF-8')
+        new File(options.parentFile, 'screenshots').deleteDir()
+    }
+    doLast {
+        def log = clientSmokeLog.get().asFile
+        def text = log.exists() ? log.getText('UTF-8') : ''
+        if (!text.contains('HOMELINK_FARM_CLIENT_SMOKE_OK') || text.contains('HOMELINK_FARM_CLIENT_SMOKE_FAILED')) {
+            throw new GradleException('Client smoke failed; inspect build/client-smoke/logs/latest.log')
+        }
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifactId = mod_id
+            from components.java
+        }
+    }
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

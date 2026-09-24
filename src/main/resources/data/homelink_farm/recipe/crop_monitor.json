@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [ "CGC", "CRC", "CSC" ],
+  "key": {
+    "C": { "item": "minecraft:copper_ingot" },
+    "G": { "tag": "c:glass_panes" },
+    "R": { "item": "minecraft:redstone" },
+    "S": { "tag": "c:seeds" }
+  },
+  "result": { "id": "homelink_farm:crop_monitor", "count": 1 }
+}

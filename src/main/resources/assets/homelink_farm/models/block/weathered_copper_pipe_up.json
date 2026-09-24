@@ -1,0 +1,7 @@
+{
+  "parent": "homelink_farm:block/template_pipe_up",
+  "textures": {
+    "pipe": "homelink_farm:block/weathered_copper_pipe",
+    "end": "homelink_farm:block/weathered_copper_pipe_end"
+  }
+}

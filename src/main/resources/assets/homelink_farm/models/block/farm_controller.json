@@ -1,0 +1,13 @@
+{
+  "parent": "homelink_farm:block/farm_controller_template",
+  "textures": {
+    "front": "homelink_farm:block/farm_controller_front",
+    "side": "homelink_farm:block/farm_controller_side",
+    "deck": "homelink_farm:block/farm_controller_deck",
+    "screen": "homelink_farm:block/farm_controller_screen",
+    "lights": "homelink_farm:block/device_lights_off",
+    "screen_lights": "homelink_farm:block/device_lights_off",
+    "steel": "homelink_farm:block/device_steel",
+    "steel_dark": "homelink_farm:block/device_steel_dark"
+  }
+}

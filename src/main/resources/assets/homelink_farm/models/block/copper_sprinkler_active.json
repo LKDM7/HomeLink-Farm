@@ -1,0 +1,10 @@
+{
+  "parent": "homelink_farm:block/template_sprinkler",
+  "textures": {
+    "base": "homelink_farm:block/copper_sprinkler_base",
+    "body": "homelink_farm:block/copper_sprinkler_body",
+    "head": "homelink_farm:block/copper_sprinkler_head_active",
+    "steel": "homelink_farm:block/device_steel",
+    "steel_dark": "homelink_farm:block/device_steel_dark"
+  }
+}

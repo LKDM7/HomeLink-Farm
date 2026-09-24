@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "waxed_copper_pipe",
+  "ingredients": [
+    {
+      "item": "homelink_farm:exposed_copper_pipe"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    }
+  ],
+  "result": {
+    "id": "homelink_farm:waxed_exposed_copper_pipe",
+    "count": 1
+  }
+}

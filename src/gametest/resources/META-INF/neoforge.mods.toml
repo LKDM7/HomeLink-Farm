@@ -1,0 +1,16 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "Apache-2.0"
+
+[[mods]]
+modId = "homelink_farm_gametest"
+version = "1.0.0"
+displayName = "HomeLink Farm GameTests"
+description = "Development-only in-game verification. Never shipped in the HomeLink Farm JAR."
+
+[[dependencies.homelink_farm_gametest]]
+modId = "homelink_farm"
+type = "required"
+versionRange = "[1.0.0,)"
+ordering = "AFTER"
+side = "BOTH"

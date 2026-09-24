@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,linked=false": { "model": "homelink_farm:block/crop_monitor" },
+    "facing=north,linked=true": { "model": "homelink_farm:block/crop_monitor_linked" },
+    "facing=east,linked=false": { "model": "homelink_farm:block/crop_monitor", "y": 90 },
+    "facing=east,linked=true": { "model": "homelink_farm:block/crop_monitor_linked", "y": 90 },
+    "facing=south,linked=false": { "model": "homelink_farm:block/crop_monitor", "y": 180 },
+    "facing=south,linked=true": { "model": "homelink_farm:block/crop_monitor_linked", "y": 180 },
+    "facing=west,linked=false": { "model": "homelink_farm:block/crop_monitor", "y": 270 },
+    "facing=west,linked=true": { "model": "homelink_farm:block/crop_monitor_linked", "y": 270 }
+  }
+}

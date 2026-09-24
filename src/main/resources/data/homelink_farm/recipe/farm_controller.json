@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [ "IGI", "CRC", "IWI" ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "G": { "tag": "c:glass_panes" },
+    "C": { "item": "minecraft:copper_ingot" },
+    "R": { "item": "minecraft:comparator" },
+    "W": { "tag": "c:crops/wheat" }
+  },
+  "result": { "id": "homelink_farm:farm_controller", "count": 1 }
+}
