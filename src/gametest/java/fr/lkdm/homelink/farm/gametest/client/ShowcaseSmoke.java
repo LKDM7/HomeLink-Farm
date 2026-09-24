@@ -65,6 +65,18 @@ final class ShowcaseSmoke {
         pause(20);
         step("showcase night screenshot", () -> true, () -> screenshot("showcase_night"));
         step("morning", () -> true, () -> onServer(player -> player.serverLevel().setDayTime(1000)));
+        closeUp("controller", CONTROLLER);
+        closeUp("monitor", MONITOR);
+        closeUp("pump", DRY_PUMP);
+        closeUp("sprinkler", SPRINKLER);
+    }
+
+    private static void closeUp(String name, BlockPos pos) {
+        step("model camera " + name, () -> true, () -> onServer(player ->
+                player.teleportTo(player.serverLevel(), pos.getX() + 2.5, GROUND + 1.2,
+                        pos.getZ() + 3.5, 146, 22)));
+        pause(20);
+        step("model detail " + name, () -> true, () -> screenshot("model_" + name));
     }
 
     private static BlockState facingSouth(Block block) {

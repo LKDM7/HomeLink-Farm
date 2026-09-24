@@ -32,6 +32,8 @@ Compilation depuis les sources (JDK 21) : publier d'abord HomeCore dans le Maven
 
 Les appareils connectés (Controller relié à au moins un composant ou à un réseau HomeLink, Monitor et Pump reliés à un Controller ou à un réseau HomeLink) font clignoter leurs voyants lumineux, visibles aussi la nuit.
 
+Chaque écran de machine possède un bouton **?** dans son en-tête. Il ouvre un guide adapté au contrôleur, au moniteur ou à la pompe : installation, commandes, liaisons et dépannage. Faites défiler avec la molette, les flèches ou Page précédente/suivante ; **Retour à la machine** ou **Échap** revient aux commandes en conservant le nom en cours de saisie. Les guides sont disponibles en français et en anglais.
+
 ### Farm Connector
 
 - Clic droit sur un **Farm Controller** : le sélectionne (`Farm Controller selected`).
@@ -43,7 +45,7 @@ En tenant le connecteur, le contrôleur sélectionné est entouré en vert et la
 
 Toute la logique passe par `FarmLinkService` (serveur) : un futur connecteur universel HomeLink pourra le remplacer sans changer les blocs.
 
-Un Crop Monitor posé surveille par défaut 9 × 9 blocs autour de lui (une couche en dessous à une au-dessus). Son écran propose aussi *Zone 9×9*, *Effacer*, *Rescanner*, *Diagnostic / Localiser*, *Voir l'irrigation*, *Voir zone* (contour cyan de la zone pendant 10 s) et le mode comparateur. Chaque objet décrit son rôle dans son infobulle.
+Un Crop Monitor posé surveille par défaut 16 × 16 blocs alignés sur son chunk (une couche en dessous à une au-dessus). Son écran propose aussi *Zone 16×16*, *Effacer*, *Rescanner*, *Diagnostic / Localiser*, *Voir l'irrigation*, *Voir zone* (contour cyan de la zone pendant 10 s) et le mode comparateur. Chaque objet décrit son rôle dans son infobulle.
 
 ## Règles de jeu
 
@@ -57,20 +59,20 @@ Un Crop Monitor posé surveille par défaut 9 × 9 blocs autour de lui (une couc
   - `NOT_IRRIGATED` : culture irrigable hors de tout arroseur **dans une zone déjà irriguée en partie** ;
   - `IRRIGATION_OFFLINE` : couverte uniquement par des arroseurs dont le réseau ne fonctionne pas.
 - Une culture « bloquée » n'est pas détectable de façon fiable : elle n'est pas signalée.
-- **LOCATE** : le serveur vérifie que l'écran du moniteur est ouvert et que la position fait partie de ses problèmes actuels, puis envoie au seul joueur concerné un marqueur temporaire (contour, faisceau, particules) qui ne modifie aucun bloc.
+- **LOCATE** : le serveur vérifie que l'écran du moniteur est ouvert et que la position fait partie de ses problèmes actuels, puis envoie au seul joueur concerné un marqueur temporaire : coins lumineux, petit losange flottant et particules. Il s'estompe avant de disparaître et ne modifie aucun bloc.
 
 ### Réseau d'irrigation
 
 - **Une pompe = 5 arroseurs maximum.** Un réseau avec N pompes alimentées accepte 5 × N arroseurs.
 - Au-delà, **tout le réseau passe `OVER_CAPACITY`** : aucun arroseur n'irrigue, la pompe et les arroseurs s'affichent en rouge. Règle déterministe : le joueur n'a jamais à deviner quels arroseurs fonctionnent.
 - L'oxydation est purement esthétique : tous les stades transportent l'eau à l'identique.
-- Le réseau est recalculé uniquement lors d'un changement structurel (tuyau, pompe ou arroseur posé ou retiré, chunk d'une pompe ou d'un arroseur déchargé), plus une reconstruction de sécurité toutes les 60 s. Jamais de parcours complet à chaque tick.
+- Le réseau est recalculé uniquement lors d'un changement structurel (tuyau, pompe ou arroseur posé ou retiré, chargement ou déchargement d'un chunk du réseau, même s'il ne contient que des tuyaux), plus une reconstruction de sécurité toutes les 60 s. Le chargement d'un chunk voisin d'un réseau incomplet invalide aussi son cache. Jamais de parcours complet à chaque tick.
 
 ### Couverture d'un arroseur
 
 Carré de `2 × sprinklerRange + 1` blocs centré sur l'arroseur (**5 × 5** par défaut). Verticalement :
-- arroseur **posé** : de 2 blocs en dessous à 1 bloc au-dessus (cultures à son niveau, ou un niveau plus bas s'il est surélevé sur un tuyau) ;
-- arroseur **suspendu** sous un tuyau : de 3 blocs en dessous jusqu'à son niveau, pour arroser depuis des tuyaux passant au-dessus de la tête.
+- arroseur **posé** : de 12 blocs en dessous à 1 bloc au-dessus ;
+- arroseur **suspendu** sous un tuyau : de 12 blocs en dessous jusqu'à son niveau. La hauteur se mesure entre le bloc de l'arroseur et celui des cultures.
 
 Un arroseur actif hydrate aussi la terre labourée de sa zone, via le `FarmlandWaterManager` de NeoForge.
 
@@ -94,13 +96,16 @@ Non implémentée, volontairement. La pluie hydrate la terre mais n'accélère p
 
 ## Vue irrigation (SHOW IRRIGATION)
 
-Touche **`I`** (configurable), ou bouton *Voir l'irrigation* dans les écrans du moniteur et de la pompe. L'affichage est temporaire et uniquement côté client, tracé au niveau des cultures (un bloc plus bas quand l'arroseur est surélevé sur un tuyau) avec une teinte légère :
-- carré bleu : zone irriguée ;
-- carré rouge : réseau en panne ;
-- carré gris : arroseur non alimenté ;
-- cadres orange : cultures non irriguées.
+Touche **`I`** (configurable), ou bouton *Voir l'irrigation* dans les écrans du moniteur et de la pompe. Des repères fins suivent le relief juste au-dessus des cultures, avec une pulsation lente et un petit halo autour des arroseurs :
 
-Les données (arroseurs et cultures non couvertes à moins de 64 blocs) sont demandées au serveur au plus une fois par seconde. Seuls des contours et un aplat par arroseur sont dessinés, jusqu'à 96 blocs de distance.
+- turquoise : zone irriguée ;
+- corail : réseau en panne ;
+- gris : arroseur non alimenté ;
+- petites croix dorées : cultures non irriguées, limitées aux douze signalements les plus proches pour préserver la lisibilité.
+
+Les couvertures superposées sont réunies ; une couverture active prend la priorité. Les terrasses et les hauteurs réelles du terrain sont prises en compte jusqu'à la portée verticale de l'arroseur. Les relevés du terrain sont mis en cache, calculés par lots de huit arroseurs par tick et limités aux chunks déjà chargés. Les données sont rafraîchies toutes les deux secondes ; les repères s'estompent à distance.
+
+Les zones du moniteur et du connecteur utilisent des coins lumineux et des pointillés animés : turquoise pour la zone surveillée, doré pour la sélection. « Voir zone » dure dix secondes, avec une apparition et une disparition progressives.
 
 ## Intégration HomeCore
 
@@ -151,7 +156,7 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 
 - **Le serveur calcule toute la vérité** : maturité, couverture, bonus, validité des pompes et des réseaux.
 - **Chaque requête client est revalidée** : écran réellement ouvert, portée de 8 blocs, propriétaire, opérateur ou permission HomeCore `CONFIGURE`, limites de zone et de distance.
-- **Analyse incrémentale** : budget par moniteur et budget global par tick.
+- **Analyse incrémentale** : budget par moniteur et budget global par tick. Une petite zone ne consomme que son nombre de positions restantes ; un moniteur sans budget ne reconstruit pas la couverture d'irrigation.
 - **Aucun chargement forcé de chunk** : un chunk déchargé est marqué « partiel » ; le contrôleur réutilise alors les dernières valeurs connues, signalées comme obsolètes.
 - **Caches non sauvegardés** : résultats d'analyse, couverture, réseaux. Seules la configuration et l'identité sont persistées.
 - **Synchronisation** : les clients ne reçoivent les données qu'en cas de changement. La liste des problèmes n'est envoyée qu'aux joueurs qui regardent le moniteur.
@@ -175,13 +180,15 @@ CropAdapters.register(new MyCropAdapter()); // pendant le setup ; les adaptateur
 ./gradlew.bat runClientSmoke                               # vrai client : scénario complet + captures d'écran
 ./gradlew.bat runClientSmoke -PsmokeLanguage=fr_fr         # le même scénario, jeu en français
 ./gradlew.bat runClientSmoke -PsmokeScenario=player        # vrai client joué via les entrées joueur (clics, touche I, sauvegarde/rechargement, mesure du +20 %)
+./gradlew.bat runClientSmoke -PsmokeScenario=help -PsmokeLanguage=fr_fr # guides des trois machines, défilement, redimensionnement et conservation du nom
+./gradlew.bat runClientSmoke -PsmokeScenario=overlays -PsmokeLanguage=fr_fr # terrain en terrasses, irrigation active/arrêtée/en panne, zones et diagnostic
 ```
 
 Les GameTests, le smoke client (captures dans `build/client-smoke/screenshots`) et les fixtures sont dans le source set `gametest`, **exclu du JAR**.
 
 ## Limites connues
 
-- Les textures sont des placeholders générés, à remplacer par des textures définitives.
+- Les boîtiers utilisent un atlas commun olive, graphite, acier et cuivre ; les sources et le script des modèles sont documentés dans [art/README.md](art/README.md).
 - Casser un bloc fait perdre son nom et sa configuration (l'objet ne les conserve pas).
 - La vue irrigation affiche au plus 64 problèmes par moniteur et 256 arroseurs.
 - Pas d'Advanced Sprinkler ni d'Irrigation Tank en V1.

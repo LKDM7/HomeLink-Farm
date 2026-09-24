@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.common.NeoForge;
 import fr.lkdm.homelink.farm.farm.irrigation.IrrigationGrowth;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -43,6 +44,16 @@ public final class HomeLinkFarm {
         modBus.addListener(this::commonSetup);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onChunkLoad);
+        NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onChunkUnload);
+    }
+
+    private static void onChunkLoad(ChunkEvent.Load event) {
+        if (event.getLevel() instanceof ServerLevel level) IrrigationManager.chunkChanged(level, event.getChunk().getPos());
+    }
+
+    private static void onChunkUnload(ChunkEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level) IrrigationManager.chunkChanged(level, event.getChunk().getPos());
     }
 
     private static void onLevelTick(LevelTickEvent.Post event) {

@@ -9,7 +9,6 @@ import fr.lkdm.homelink.farm.registry.ModDataComponents;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
@@ -32,6 +31,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  */
 public final class ZonePreview {
     private static final int SHOW_TICKS = 200;
+    private static final int MAX_SHOWN = 16;
     private static final Map<BlockPos, Long> SHOWN_MONITORS = new HashMap<>();
 
     private ZonePreview() {
@@ -40,7 +40,13 @@ public final class ZonePreview {
     /** Shows the zone of the monitor at {@code pos} for {@link #SHOW_TICKS} ticks. */
     public static void showMonitorZone(BlockPos pos) {
         var level = Minecraft.getInstance().level;
-        if (level != null) SHOWN_MONITORS.put(pos.immutable(), level.getGameTime() + SHOW_TICKS);
+        if (level != null) {
+            if (SHOWN_MONITORS.size() >= MAX_SHOWN && !SHOWN_MONITORS.containsKey(pos)) {
+                SHOWN_MONITORS.entrySet().stream().min(Map.Entry.comparingByValue())
+                        .ifPresent(oldest -> SHOWN_MONITORS.remove(oldest.getKey()));
+            }
+            SHOWN_MONITORS.put(pos.immutable(), level.getGameTime() + SHOW_TICKS);
+        }
     }
 
     public static boolean showing(BlockPos monitor) {
@@ -56,6 +62,7 @@ public final class ZonePreview {
         Minecraft client = Minecraft.getInstance();
         if (client.level == null || client.player == null) return;
         long now = client.level.getGameTime();
+        double time = now + event.getPartialTick().getGameTimeDeltaPartialTick(false);
         SHOWN_MONITORS.values().removeIf(expiry -> expiry <= now);
         ItemStack connector = heldConnector(client);
         if (connector.isEmpty() && SHOWN_MONITORS.isEmpty()) return;
@@ -69,22 +76,30 @@ public final class ZonePreview {
         if (!connector.isEmpty()) {
             GlobalPos controller = connector.get(ModDataComponents.SELECTED_CONTROLLER.get());
             if (controller != null && controller.dimension().equals(client.level.dimension())) {
-                LevelRenderer.renderLineBox(pose, lines, new AABB(controller.pos()).inflate(0.03), 0.35F, 0.85F, 0.35F, 1.0F);
+                float fade = FieldGuide.distanceFade(camera.distanceToSqr(Vec3.atCenterOf(controller.pos())), 96);
+                FieldGuide.corners(pose, lines, new AABB(controller.pos()).inflate(0.03), 0xA1BD92, fade);
             }
             GlobalPos a = connector.get(ModDataComponents.ZONE_CORNER_A.get());
             if (a != null && a.dimension().equals(client.level.dimension())) {
                 GlobalPos b = connector.get(ModDataComponents.ZONE_CORNER_B.get());
+                if (b != null && !b.dimension().equals(client.level.dimension())) b = null;
                 BlockPos end = b != null ? b.pos() : targetedBlock(client);
-                LevelRenderer.renderLineBox(pose, lines, new AABB(a.pos()).inflate(0.02), 1.0F, 0.85F, 0.2F, 1.0F);
+                float fade = FieldGuide.distanceFade(camera.distanceToSqr(Vec3.atCenterOf(a.pos())), 128);
+                FieldGuide.corners(pose, lines, new AABB(a.pos()).inflate(0.02), FieldGuide.GOLD, fade);
                 if (end != null) {
                     AABB zone = new CropZone(a.pos(), end).toAabb().inflate(0.01);
-                    LevelRenderer.renderLineBox(pose, lines, zone, 1.0F, 0.75F, 0.1F, b != null ? 1.0F : 0.6F);
+                    FieldGuide.zone(pose, lines, zone, FieldGuide.GOLD, fade * (b != null ? 1.0F : 0.65F), time);
+                    FieldGuide.corners(pose, lines, new AABB(end).inflate(0.02), FieldGuide.GOLD, fade);
                 }
             }
         }
         for (BlockPos monitorPos : SHOWN_MONITORS.keySet()) {
             if (client.level.getBlockEntity(monitorPos) instanceof CropMonitorBlockEntity monitor && monitor.zone().isPresent()) {
-                LevelRenderer.renderLineBox(pose, lines, monitor.zone().get().toAabb().inflate(0.02), 0.25F, 0.85F, 0.95F, 1.0F);
+                float fade = FieldGuide.distanceFade(camera.distanceToSqr(Vec3.atCenterOf(monitorPos)), 128);
+                double remaining = SHOWN_MONITORS.get(monitorPos) - time;
+                float envelope = (float)Math.clamp(Math.min((SHOW_TICKS - remaining) / 8, remaining / 25), 0, 1);
+                FieldGuide.zone(pose, lines, monitor.zone().get().toAabb().inflate(0.02),
+                        FieldGuide.WATER, fade * envelope, time);
             }
         }
         pose.popPose();

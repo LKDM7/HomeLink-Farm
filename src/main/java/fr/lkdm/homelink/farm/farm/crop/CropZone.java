@@ -20,6 +20,14 @@ public record CropZone(BlockPos min, BlockPos max) {
         return new CropZone(center.offset(-radius, -below, -radius), center.offset(radius, above, radius));
     }
 
+    /** The monitor's 16 x 16 chunk footprint, keeping only nearby crop layers. */
+    public static CropZone chunkAround(BlockPos center, int below, int above) {
+        int x = Math.floorDiv(center.getX(), 16) * 16;
+        int z = Math.floorDiv(center.getZ(), 16) * 16;
+        return new CropZone(new BlockPos(x, center.getY() - below, z),
+                new BlockPos(x + 15, center.getY() + above, z + 15));
+    }
+
     public int sizeX() { return max.getX() - min.getX() + 1; }
     public int sizeY() { return max.getY() - min.getY() + 1; }
     public int sizeZ() { return max.getZ() - min.getZ() + 1; }

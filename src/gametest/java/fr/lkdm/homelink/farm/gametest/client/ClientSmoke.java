@@ -132,7 +132,13 @@ public final class ClientSmoke {
             if (stage == -1) {
                 if (client.player == null || client.getSingleplayerServer() == null || client.level == null) return;
                 stage = 0;
-                if (PLAYER) {
+                if (SCENARIO.equals("textures")) {
+                    TextureSmoke.define();
+                } else if (SCENARIO.equals("help")) {
+                    HelpSmoke.define();
+                } else if (SCENARIO.equals("overlays")) {
+                    OverlaySmoke.define();
+                } else if (PLAYER) {
                     PlayerSmoke.define();
                 } else {
                     AssetSmoke.define();

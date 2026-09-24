@@ -12,6 +12,7 @@ import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -54,6 +55,9 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     private EditBox nameBox;
     @org.jetbrains.annotations.Nullable
     private Button networkButton;
+    private boolean helpOpen;
+    private FarmHelpView help;
+    private Button helpUp, helpDown;
 
     protected FarmDeviceScreen(FarmDeviceMenu menu, Inventory inventory, Component title, Class<T> deviceClass, int height) {
         super(menu, inventory, title);
@@ -64,12 +68,30 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
 
     @Override
     protected void init() {
+        String draft = nameBox == null ? null : nameBox.getValue();
+        boolean editingName = nameBox != null && nameBox.isFocused();
         super.init();
         networkButton = null;
+        Button helpButton = button(Component.translatable("gui.homelink_farm.help.button"), imageWidth - 30, 3, 20, this::toggleHelp);
+        ((FarmButton) helpButton).accentWhen(() -> helpOpen);
+        helpButton.setTooltip(Tooltip.create(Component.translatable("gui.homelink_farm.help.tooltip")));
+        if (helpOpen) {
+            help = new FarmHelpView(font, helpContent(), leftPos + 10, topPos + 43, imageWidth - 20,
+                    bottomRow() - 50, help == null ? 0 : help.offset());
+            helpUp = button(Component.translatable("gui.homelink_farm.help.up"), 10, bottomRow(), 30,
+                    () -> { help.scroll(-help.visibleLines()); refreshHelpButtons(); });
+            helpDown = button(Component.translatable("gui.homelink_farm.help.down"), 44, bottomRow(), 30,
+                    () -> { help.scroll(help.visibleLines()); refreshHelpButtons(); });
+            button(Component.translatable("gui.homelink_farm.help.back"), 82, bottomRow(), 178, this::toggleHelp);
+            refreshHelpButtons();
+            return;
+        }
         nameBox = new EditBox(font, leftPos + 10, topPos + 30, 170, 16, Component.translatable("gui.homelink_farm.name"));
         nameBox.setMaxLength(DeviceNames.MAX_LENGTH);
-        device().ifPresent(device -> nameBox.setValue(device.customName()));
+        if (draft != null) nameBox.setValue(draft);
+        else device().ifPresent(device -> nameBox.setValue(device.customName()));
         addRenderableWidget(nameBox);
+        if (editingName) setFocused(nameBox);
         button(Component.translatable("gui.homelink_farm.rename"), 184, 29, 76, this::sendRename);
         addDeviceWidgets();
     }
@@ -162,6 +184,20 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     /** Status lines displayed under the name field. */
     protected abstract void collectLines(T device, List<Line> lines);
 
+    protected abstract Component helpContent();
+
+    public boolean isHelpOpen() { return helpOpen; }
+
+    private void toggleHelp() {
+        helpOpen = !helpOpen;
+        rebuildWidgets();
+    }
+
+    private void refreshHelpButtons() {
+        helpUp.active = help.offset() > 0;
+        helpDown.active = help.offset() < help.maxOffset();
+    }
+
     /** Header status; by default whether the device is linked (its lights blink in the world). */
     protected HeaderStatus headerStatus(T device) {
         return device.isLinked()
@@ -178,6 +214,10 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         FarmTheme.window(graphics, leftPos, topPos, imageWidth, imageHeight, HEADER_HEIGHT);
+        if (helpOpen) {
+            help.render(graphics);
+            return;
+        }
         FarmTheme.divider(graphics, leftPos + 10, topPos + 52, imageWidth - 20);
         FarmTheme.divider(graphics, leftPos + 10, topPos + buttonsTop() - 4, imageWidth - 20);
         int count = device().map(device -> lines(device).size()).orElse(1);
@@ -190,11 +230,15 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         HeaderStatus status = device.map(this::headerStatus)
                 .orElse(new HeaderStatus(Component.translatable("gui.homelink_farm.unavailable"), BAD));
         String statusText = font.plainSubstrByWidth(status.text().getString(), 90);
-        int statusX = imageWidth - 12 - font.width(statusText);
+        int statusX = imageWidth - 38 - font.width(statusText);
         FarmTheme.statusLight(graphics, statusX - 12, 8, status.color());
         graphics.drawString(font, statusText, statusX, 8, LABEL, false);
         Component heading = device.map(AbstractFarmDeviceBlockEntity::displayName).orElse(title);
         graphics.drawString(font, font.plainSubstrByWidth(heading.getString(), statusX - 30), 14, 8, TEXT, false);
+        if (helpOpen) {
+            graphics.drawString(font, Component.translatable("gui.homelink_farm.help.title"), 12, 30, FarmTheme.ACCENT, false);
+            return;
+        }
         if (device.isEmpty()) {
             graphics.drawString(font, Component.translatable("gui.homelink_farm.unavailable"), 16, LINES_TOP, BAD, false);
             return;
@@ -223,6 +267,17 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (helpOpen) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                toggleHelp();
+                return true;
+            }
+            if (help.keyPressed(keyCode)) {
+                refreshHelpButtons();
+                return true;
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
         if (nameBox.isFocused()) {
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 sendRename();
@@ -234,6 +289,15 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
             }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+        if (helpOpen && help.mouseScrolled(mouseX, mouseY, deltaY)) {
+            refreshHelpButtons();
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
     }
 
     protected static Line line(String labelKey, Component value) {

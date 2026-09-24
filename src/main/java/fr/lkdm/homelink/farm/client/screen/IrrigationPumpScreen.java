@@ -9,6 +9,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class IrrigationPumpScreen extends FarmDeviceScreen<IrrigationPumpBlockEntity> {
+    @Override
+    protected Component helpContent() {
+        return Component.translatable("gui.homelink_farm.help.pump");
+    }
+
     public IrrigationPumpScreen(FarmDeviceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, IrrigationPumpBlockEntity.class, 215);
     }

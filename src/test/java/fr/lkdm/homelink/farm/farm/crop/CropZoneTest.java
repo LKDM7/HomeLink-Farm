@@ -11,6 +11,27 @@ import org.junit.jupiter.api.Test;
 
 class CropZoneTest {
     @Test
+    void chunkZoneCoversExactlyItsChunkAcrossPositiveAndNegativeBoundaries() {
+        for (int x : new int[] {-17, -16, -1, 0, 15, 16}) {
+            for (int z : new int[] {-17, -16, -1, 0, 15, 16}) {
+                BlockPos monitor = new BlockPos(x, 64, z);
+                CropZone zone = CropZone.chunkAround(monitor, 1, 1);
+                assertEquals(16, zone.sizeX());
+                assertEquals(16, zone.sizeZ());
+                assertEquals(768, zone.volume());
+                assertEquals(63, zone.min().getY());
+                assertEquals(65, zone.max().getY());
+                assertEquals(x >> 4, zone.min().getX() >> 4);
+                assertEquals(x >> 4, zone.max().getX() >> 4);
+                assertEquals(z >> 4, zone.min().getZ() >> 4);
+                assertEquals(z >> 4, zone.max().getZ() >> 4);
+                assertTrue(zone.contains(monitor));
+                assertEquals(ZoneValidation.Result.OK, ZoneValidation.validate(monitor, zone, 32768, 48));
+            }
+        }
+    }
+
+    @Test
     void normalizesCornersAndComputesVolume() {
         CropZone zone = new CropZone(new BlockPos(5, 70, -3), new BlockPos(-2, 68, 4));
         assertEquals(new BlockPos(-2, 68, -3), zone.min());

@@ -63,7 +63,7 @@ public final class FarmServerConfig {
                 .defineInRange("maxNetworkNodes", 1024, 16, 16384);
         SPRINKLER_RANGE = builder
                 .comment("Horizontal reach of a Copper Sprinkler: it covers a (2 * range + 1) square. Default 2 = 5 x 5.",
-                        "Vertically it covers from 2 blocks below to 1 block above the sprinkler.")
+                        "Vertically it reaches 12 blocks below; up to 1 block above when standing, or its own level when hanging.")
                 .defineInRange("sprinklerRange", 2, 1, 4);
         IRRIGATION_GROWTH_BONUS = builder
                 .comment("Growth speed bonus of irrigated crops (0.20 = +20%). Never stacks between sprinklers.",

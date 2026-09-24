@@ -47,12 +47,16 @@ public class CopperSprinklerBlock extends BaseEntityBlock implements IrrigationC
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(4, 0, 4, 12, 2, 12),
             Block.box(6.5, 2, 6.5, 9.5, 10, 9.5),
+            Block.box(6, 3, 6, 10, 4, 10),
+            Block.box(6, 8, 6, 10, 9, 10),
             Block.box(5, 10, 5, 11, 13, 11),
             Block.box(1, 10, 7, 15, 12, 9),
             Block.box(7, 10, 1, 9, 12, 15));
     private static final VoxelShape HANGING_SHAPE = Shapes.or(
             Block.box(4, 14, 4, 12, 16, 12),
             Block.box(6.5, 6, 6.5, 9.5, 14, 9.5),
+            Block.box(6, 12, 6, 10, 13, 10),
+            Block.box(6, 7, 6, 10, 8, 10),
             Block.box(5, 3, 5, 11, 6, 11),
             Block.box(1, 4, 7, 15, 6, 9),
             Block.box(7, 4, 1, 9, 6, 15));

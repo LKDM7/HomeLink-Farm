@@ -17,6 +17,7 @@ import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -50,6 +51,26 @@ public final class IrrigationManager {
 
     public static void forget(ServerLevel level) {
         MANAGERS.remove(level);
+    }
+
+    /** Chunk-only pipe segments have no block entity to notify us of lifecycle changes. */
+    public static void chunkChanged(ServerLevel level, ChunkPos chunk) {
+        IrrigationManager manager = MANAGERS.get(level);
+        if (manager == null) return;
+        // Snapshot before disposal, which removes all of a network's indexed nodes.
+        Set<IrrigationNetwork> affected = new HashSet<>();
+        for (var entry : manager.index.entrySet()) {
+            BlockPos pos = entry.getKey();
+            int dx = Math.abs((pos.getX() >> 4) - chunk.x);
+            int dz = Math.abs((pos.getZ() >> 4) - chunk.z);
+            if (dx + dz == 0 || (entry.getValue().incomplete() && dx + dz == 1)) {
+                affected.add(entry.getValue());
+            }
+        }
+        if (!affected.isEmpty()) {
+            manager.structureVersion++;
+            affected.forEach(manager::dispose);
+        }
     }
 
     /** Incremented on every structural change; lets caches (coverage) know when to rebuild. */

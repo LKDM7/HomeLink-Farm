@@ -46,14 +46,14 @@ public class CopperPipeBlock extends Block implements IrrigationConnectable, Sim
             propertiesCodec()).apply(instance, CopperPipeBlock::new));
 
     public static final Map<Direction, BooleanProperty> CONNECTIONS = PipeBlock.PROPERTY_BY_DIRECTION;
-    private static final VoxelShape CORE = Block.box(5, 5, 5, 11, 11, 11);
+    private static final VoxelShape CORE = Block.box(6, 6, 6, 10, 10, 10);
     private static final Map<Direction, VoxelShape> ARMS = Map.of(
-            Direction.NORTH, Block.box(5, 5, 0, 11, 11, 5),
-            Direction.SOUTH, Block.box(5, 5, 11, 11, 11, 16),
-            Direction.WEST, Block.box(0, 5, 5, 5, 11, 11),
-            Direction.EAST, Block.box(11, 5, 5, 16, 11, 11),
-            Direction.DOWN, Block.box(5, 0, 5, 11, 5, 11),
-            Direction.UP, Block.box(5, 11, 5, 11, 16, 11));
+            Direction.NORTH, Shapes.or(Block.box(6, 6, 0, 10, 10, 6), Block.box(5.75, 5.75, 0, 10.25, 10.25, .5)),
+            Direction.SOUTH, Shapes.or(Block.box(6, 6, 10, 10, 10, 16), Block.box(5.75, 5.75, 15.5, 10.25, 10.25, 16)),
+            Direction.WEST, Shapes.or(Block.box(0, 6, 6, 6, 10, 10), Block.box(0, 5.75, 5.75, .5, 10.25, 10.25)),
+            Direction.EAST, Shapes.or(Block.box(10, 6, 6, 16, 10, 10), Block.box(15.5, 5.75, 5.75, 16, 10.25, 10.25)),
+            Direction.DOWN, Shapes.or(Block.box(6, 0, 6, 10, 6, 10), Block.box(5.75, 0, 5.75, 10.25, .5, 10.25)),
+            Direction.UP, Shapes.or(Block.box(6, 10, 6, 10, 16, 10), Block.box(5.75, 15.5, 5.75, 10.25, 16, 10.25)));
     private static final VoxelShape[] SHAPES = new VoxelShape[64];
 
     static {

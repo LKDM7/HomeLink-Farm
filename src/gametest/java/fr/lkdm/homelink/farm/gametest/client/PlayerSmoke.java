@@ -219,10 +219,10 @@ final class PlayerSmoke {
             select(SLOT_MONITOR);
             placeOn(MONITOR.below());
         });
-        step("monitor has default 9x9 zone", () -> clientEntity(MONITOR, CropMonitorBlockEntity.class) != null
+        step("monitor has default chunk zone", () -> clientEntity(MONITOR, CropMonitorBlockEntity.class) != null
                 && clientEntity(MONITOR, CropMonitorBlockEntity.class).zone().isPresent(), () -> {
             CropZone zone = clientEntity(MONITOR, CropMonitorBlockEntity.class).zone().get();
-            check(zone.sizeX() == 9 && zone.sizeZ() == 9 && zone.sizeY() == 3, "default zone " + zone);
+            check(zone.equals(CropZone.chunkAround(MONITOR, 1, 1)), "default zone " + zone);
         });
 
         // 2. Farm Connector: select the controller, link the monitor, set zone A/B while sneaking.

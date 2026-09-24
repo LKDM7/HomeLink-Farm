@@ -21,6 +21,7 @@ public final class FarmLinkService {
     public static LinkResult link(ServerPlayer player, ServerLevel level, BlockPos controllerPos, BlockPos componentPos) {
         if (!level.isLoaded(controllerPos)) return LinkResult.CONTROLLER_UNLOADED;
         if (!(level.getBlockEntity(controllerPos) instanceof FarmControllerBlockEntity controller)) return LinkResult.CONTROLLER_MISSING;
+        if (!level.isLoaded(componentPos)) return LinkResult.NOT_A_COMPONENT;
         BlockEntity target = level.getBlockEntity(componentPos);
         if (!(target instanceof FarmComponent component) || !(target instanceof AbstractFarmDeviceBlockEntity device)) {
             return LinkResult.NOT_A_COMPONENT;

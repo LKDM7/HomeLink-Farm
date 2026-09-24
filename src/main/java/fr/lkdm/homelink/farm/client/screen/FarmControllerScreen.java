@@ -10,6 +10,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class FarmControllerScreen extends FarmDeviceScreen<FarmControllerBlockEntity> {
+    @Override
+    protected Component helpContent() {
+        return Component.translatable("gui.homelink_farm.help.controller");
+    }
+
     public FarmControllerScreen(FarmDeviceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, FarmControllerBlockEntity.class, 204);
     }

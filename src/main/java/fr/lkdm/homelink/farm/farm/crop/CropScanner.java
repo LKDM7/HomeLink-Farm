@@ -75,9 +75,10 @@ public final class CropScanner {
             cursor = 0;
             pass = new CropScanResult.Builder();
         }
-        int granted = ScanBudget.take(level.getServer(), FarmServerConfig.CROP_SCAN_BUDGET_PER_TICK.get(),
-                FarmServerConfig.GLOBAL_SCAN_BUDGET_PER_TICK.get());
         long volume = zone.volume();
+        int wanted = (int) Math.min(volume - cursor, FarmServerConfig.CROP_SCAN_BUDGET_PER_TICK.get());
+        int granted = ScanBudget.take(level.getServer(), wanted, FarmServerConfig.GLOBAL_SCAN_BUDGET_PER_TICK.get());
+        if (granted == 0) return null;
         IrrigationCoverage coverage = IrrigationManager.get(level).coverage();
         for (int i = 0; i < granted && cursor < volume; i++, cursor++) {
             BlockPos pos = zone.positionAt(cursor, cursorPos);

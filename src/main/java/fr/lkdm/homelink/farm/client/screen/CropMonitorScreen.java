@@ -20,11 +20,18 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /** Overview (figures + zone buttons) and Diagnostic (problem list with LOCATE) views. */
 public class CropMonitorScreen extends FarmDeviceScreen<CropMonitorBlockEntity> {
+    @Override
+    protected Component helpContent() {
+        return Component.translatable("gui.homelink_farm.help.monitor");
+    }
+
     private static final int ROW_HEIGHT = 17;
 
     private boolean diagnostic;
     private fr.lkdm.homelink.farm.farm.crop.ComparatorMode lastMode;
     private int page;
+    private List<CropProblem> displayedProblems = List.of();
+    private ProblemCounts displayedCounts = ProblemCounts.NONE;
 
     public CropMonitorScreen(FarmDeviceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, CropMonitorBlockEntity.class, 226);
@@ -41,6 +48,9 @@ public class CropMonitorScreen extends FarmDeviceScreen<CropMonitorBlockEntity> 
 
     @Override
     protected void addDeviceWidgets() {
+        lastMode = device().map(CropMonitorBlockEntity::comparatorMode).orElse(null);
+        displayedProblems = ClientFarmData.problems(menu.pos());
+        displayedCounts = counts();
         int bottom = bottomRow();
         if (!diagnostic) {
             commandButton(Component.translatable("gui.homelink_farm.zone.auto"), 10, bottom, 80, DeviceCommand.ZONE_AUTO, 0);
@@ -102,8 +112,13 @@ public class CropMonitorScreen extends FarmDeviceScreen<CropMonitorBlockEntity> 
     @Override
     protected void containerTick() {
         super.containerTick();
-        // The problem list arrives asynchronously; rebuild the rows once it does.
-        if (diagnostic && minecraft != null && minecraft.level != null && minecraft.level.getGameTime() % 20 == 0) rebuildWidgets();
+        if (isHelpOpen()) return;
+        // Refresh only when the asynchronous data changes; never rebuild while rendering.
+        if (diagnostic) {
+            if (!displayedProblems.equals(ClientFarmData.problems(menu.pos())) || !displayedCounts.equals(counts())) rebuildWidgets();
+        } else if (device().map(CropMonitorBlockEntity::comparatorMode).orElse(null) != lastMode) {
+            rebuildWidgets();
+        }
     }
 
     @Override
@@ -115,10 +130,6 @@ public class CropMonitorScreen extends FarmDeviceScreen<CropMonitorBlockEntity> 
         Component controller = monitor.controllerLink().map(this::describe)
                 .orElse(Component.translatable("gui.homelink_farm.not_linked"));
         lines.add(line("gui.homelink_farm.controller", controller));
-        if (lastMode != monitor.comparatorMode()) {
-            lastMode = monitor.comparatorMode();
-            if (!diagnostic) rebuildWidgets();
-        }
         lines.add(line("gui.homelink_farm.zone", monitor.zone()
                 .map(zone -> Component.translatable("gui.homelink_farm.zone.size", zone.sizeX(), zone.sizeY(), zone.sizeZ(), zone.volume()))
                 .orElse(Component.translatable("gui.homelink_farm.zone.not_configured")), monitor.zone().isPresent() ? TEXT : WARN));

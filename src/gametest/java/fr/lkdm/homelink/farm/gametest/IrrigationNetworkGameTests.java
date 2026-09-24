@@ -252,7 +252,7 @@ public final class IrrigationNetworkGameTests {
             helper.assertTrue(visual(helper, hanging) == IrrigationVisual.ACTIVE, "Hanging sprinkler not fed from the pipe above");
             helper.assertTrue(pump(helper, PUMP).snapshot().sprinklers() == 1, "Standing sprinkler connected through its top: " + pump(helper, PUMP).snapshot().sprinklers());
             helper.assertTrue(visual(helper, new BlockPos(6, 5, 1)) == IrrigationVisual.OFF, "Standing sprinkler under a pipe is fed");
-            // The crop is 3 blocks below the hanging sprinkler: only a hanging sprinkler reaches it.
+            // The crop is below the hanging sprinkler, which is supplied through its top.
             helper.assertTrue(IrrigationManager.get(helper.getLevel()).coverage().irrigated(crop), "Crop under the hanging sprinkler not irrigated");
         });
     }

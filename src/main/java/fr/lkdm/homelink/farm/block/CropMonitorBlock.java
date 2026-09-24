@@ -24,7 +24,9 @@ public class CropMonitorBlock extends AbstractFarmDeviceBlock {
     private static final Map<Direction, VoxelShape> SHAPES = DeviceShapes.horizontal(
             new double[] {3, 0, 3, 13, 1, 13},
             new double[] {7, 1, 7, 9, 7, 9},
-            new double[] {2, 7, 4, 14, 16, 12});
+            new double[] {6, 1, 6, 10, 2, 10},
+            new double[] {2, 7, 4, 14, 16, 12},
+            new double[] {2, 14.5, 3.5, 14, 15, 12.5});
 
     public CropMonitorBlock(Properties properties) {
         super(properties);
@@ -45,7 +47,7 @@ public class CropMonitorBlock extends AbstractFarmDeviceBlock {
         return new CropMonitorBlockEntity(pos, state);
     }
 
-    /** A freshly placed monitor watches the 9 x 9 area around itself until a zone is chosen. */
+    /** A freshly placed monitor watches its chunk's crop layers until a zone is chosen. */
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);

@@ -20,7 +20,9 @@ public class FarmControllerBlock extends AbstractFarmDeviceBlock {
     private static final Map<Direction, VoxelShape> SHAPES = DeviceShapes.horizontal(
             new double[] {1, 0, 1, 15, 9, 15},
             new double[] {1, 9, 1, 15, 10, 8},
-            new double[] {2, 9, 9, 14, 16, 14});
+            new double[] {2, 9, 9, 14, 16, 14},
+            new double[] {2, 15.5, 8.5, 14, 16, 14.5},
+            new double[] {4, 3, 15, 12, 7.5, 15.25});
 
     public FarmControllerBlock(Properties properties) {
         super(properties);

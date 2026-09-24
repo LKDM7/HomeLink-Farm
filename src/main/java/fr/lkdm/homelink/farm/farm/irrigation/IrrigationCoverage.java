@@ -9,15 +9,15 @@ import net.minecraft.world.phys.AABB;
  * Positions covered by sprinklers, as a UNION: a crop under two or three sprinklers appears
  * once, which is what prevents the growth bonus from stacking.
  * <p>Area of one sprinkler: a square of {@code 2 * range + 1} blocks centered on it (5 x 5 with
- * the default range 2). Vertically, a standing sprinkler covers from 2 blocks below to 1 block
+ * the default range 2). Vertically, a standing sprinkler covers from 12 blocks below to 1 block
  * above itself (crops at its level, or one level below when raised on a pipe); a hanging
- * sprinkler (under a pipe) covers from 3 blocks below up to its own level, so overhead pipes
+ * sprinkler (under a pipe) covers from 12 blocks below up to its own level, so overhead pipes
  * can water the crops underneath.</p>
  */
 public final class IrrigationCoverage {
-    public static final int BELOW = 2;
+    public static final int BELOW = 12;
     public static final int ABOVE = 1;
-    public static final int HANGING_BELOW = 3;
+    public static final int HANGING_BELOW = 12;
     public static final int HANGING_ABOVE = 0;
     public static final IrrigationCoverage EMPTY = new IrrigationCoverage(new LongOpenHashSet(), new LongOpenHashSet(), 0, 0);
 

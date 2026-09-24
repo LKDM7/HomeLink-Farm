@@ -35,8 +35,7 @@ import org.jetbrains.annotations.Nullable;
 /** Watches a zone of crops with an incremental, budgeted scan. */
 public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
         implements FarmComponent, ServerTickingDevice, DeviceCommandTarget {
-    /** Default zone: 9 x 9 blocks around the monitor, from one layer below to one layer above. */
-    public static final int AUTO_RADIUS = 4;
+    /** Default zone: the monitor's chunk footprint, from one layer below to one layer above. */
     public static final int AUTO_BELOW = 1;
     public static final int AUTO_ABOVE = 1;
 
@@ -99,7 +98,7 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
     }
 
     public void applyDefaultZone() {
-        setZone(CropZone.around(getBlockPos(), AUTO_RADIUS, AUTO_BELOW, AUTO_ABOVE));
+        setZone(CropZone.chunkAround(getBlockPos(), AUTO_BELOW, AUTO_ABOVE));
     }
 
     private void resetScan() {
@@ -107,6 +106,7 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
         result = null;
         setChangedAndSync();
         updateComparators();
+        sendProblemsToViewers();
     }
 
     @Override
@@ -142,10 +142,13 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
         result = completed;
         if (changed) syncToClients();
         if (comparatorSignal() != previousSignal) updateComparators();
-        if (problemsChanged) {
-            for (ServerPlayer viewer : level.players()) {
-                if (viewer.containerMenu instanceof FarmDeviceMenu menu && menu.pos().equals(getBlockPos())) sendProblemsTo(viewer);
-            }
+        if (problemsChanged) sendProblemsToViewers();
+    }
+
+    private void sendProblemsToViewers() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        for (ServerPlayer viewer : serverLevel.players()) {
+            if (viewer.containerMenu instanceof FarmDeviceMenu menu && menu.pos().equals(getBlockPos())) sendProblemsTo(viewer);
         }
     }
 
@@ -170,7 +173,7 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
     public void handleCommand(ServerPlayer player, DeviceCommand command, int argument) {
         switch (command) {
             case ZONE_AUTO -> {
-                CropZone auto = CropZone.around(getBlockPos(), AUTO_RADIUS, AUTO_BELOW, AUTO_ABOVE);
+                CropZone auto = CropZone.chunkAround(getBlockPos(), AUTO_BELOW, AUTO_ABOVE);
                 ZoneValidation.Result validation = setZone(auto);
                 player.displayClientMessage(validation.message(auto).withStyle(
                         validation == ZoneValidation.Result.OK ? ChatFormatting.GREEN : ChatFormatting.RED), true);

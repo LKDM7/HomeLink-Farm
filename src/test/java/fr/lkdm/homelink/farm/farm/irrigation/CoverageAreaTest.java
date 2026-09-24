@@ -12,25 +12,26 @@ class CoverageAreaTest {
     private static final BlockPos SPRINKLER = new BlockPos(0, 64, 0);
 
     @Test
-    void standingSprinklerCoversTwoBelowToOneAbove() {
+    void standingSprinklerCoversTwelveBelowToOneAbove() {
         LongOpenHashSet area = new LongOpenHashSet();
         IrrigationCoverage.addArea(area, SPRINKLER, 2, false);
-        assertEquals(5 * 5 * 4, area.size());
-        assertTrue(area.contains(BlockPos.asLong(2, 62, -2)));
+        assertEquals(5 * 5 * 14, area.size());
+        assertTrue(area.contains(BlockPos.asLong(2, 52, -2)));
         assertTrue(area.contains(BlockPos.asLong(0, 65, 0)));
-        assertFalse(area.contains(BlockPos.asLong(0, 61, 0)));
+        assertFalse(area.contains(BlockPos.asLong(0, 51, 0)));
+        assertFalse(area.contains(BlockPos.asLong(0, 66, 0)));
         assertFalse(area.contains(BlockPos.asLong(3, 64, 0)));
     }
 
     @Test
-    void hangingSprinklerCoversThreeBelowToItsLevel() {
+    void hangingSprinklerCoversTwelveBelowToItsLevel() {
         LongOpenHashSet area = new LongOpenHashSet();
         IrrigationCoverage.addArea(area, SPRINKLER, 2, true);
-        assertEquals(5 * 5 * 4, area.size());
-        assertTrue(area.contains(BlockPos.asLong(0, 61, 0)));
+        assertEquals(5 * 5 * 13, area.size());
+        assertTrue(area.contains(BlockPos.asLong(0, 52, 0)));
         assertTrue(area.contains(BlockPos.asLong(-2, 64, 2)));
         assertFalse(area.contains(BlockPos.asLong(0, 65, 0)));
-        assertFalse(area.contains(BlockPos.asLong(0, 60, 0)));
+        assertFalse(area.contains(BlockPos.asLong(0, 51, 0)));
     }
 
     @Test
@@ -38,6 +39,6 @@ class CoverageAreaTest {
         LongOpenHashSet union = new LongOpenHashSet();
         IrrigationCoverage.addArea(union, SPRINKLER, 2, false);
         IrrigationCoverage.addArea(union, SPRINKLER.east(2), 2, false);
-        assertEquals(7 * 5 * 4, union.size());
+        assertEquals(7 * 5 * 14, union.size());
     }
 }

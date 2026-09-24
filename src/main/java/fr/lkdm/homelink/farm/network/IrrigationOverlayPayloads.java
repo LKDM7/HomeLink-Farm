@@ -11,6 +11,8 @@ import fr.lkdm.homelink.farm.farm.irrigation.IrrigationVisual;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
@@ -88,17 +90,20 @@ public final class IrrigationOverlayPayloads {
         List<SprinklerMark> sprinklers = new ArrayList<>();
         for (BlockPos pos : IrrigationManager.get(level).loadedSprinklers()) {
             if (sprinklers.size() >= MAX_SPRINKLERS) break;
-            if (!near(center, pos)) continue;
+            if (!near(center, pos) || !level.isLoaded(pos)) continue;
             var state = level.getBlockState(pos);
             if (state.hasProperty(IrrigationVisual.PROPERTY)) sprinklers.add(new SprinklerMark(pos, state.getValue(IrrigationVisual.PROPERTY).ordinal()));
         }
         List<CropProblem> uncovered = new ArrayList<>();
+        Set<BlockPos> seen = new HashSet<>();
         for (BlockPos monitorPos : LoadedMonitors.in(level)) {
-            if (!near(center, monitorPos) || !(level.getBlockEntity(monitorPos) instanceof CropMonitorBlockEntity monitor)) continue;
+            if (uncovered.size() >= MAX_UNCOVERED) break;
+            if (!level.isLoaded(monitorPos) || !(level.getBlockEntity(monitorPos) instanceof CropMonitorBlockEntity monitor)) continue;
             monitor.result().ifPresent(result -> {
                 for (CropProblem problem : result.samples()) {
                     if (uncovered.size() >= MAX_UNCOVERED) return;
-                    if (problem.type() == ProblemType.NOT_IRRIGATED || problem.type() == ProblemType.IRRIGATION_OFFLINE) uncovered.add(problem);
+                    if (near(center, problem.pos()) && (problem.type() == ProblemType.NOT_IRRIGATED
+                            || problem.type() == ProblemType.IRRIGATION_OFFLINE) && seen.add(problem.pos())) uncovered.add(problem);
                 }
             });
         }
