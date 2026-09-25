@@ -146,6 +146,11 @@ public abstract class AbstractFarmDeviceBlockEntity extends BlockEntity implemen
             if (exposedToHomeCore()) fr.lkdm.homelink.farm.network.HomeNetworkPayloads.sendChoices(serverPlayer, this);
             onMenuOpened(serverPlayer);
         }
+        return createDeviceMenu(containerId, inventory, player);
+    }
+
+    /** The menu backing this device screen (slot-less by default). */
+    protected AbstractContainerMenu createDeviceMenu(int containerId, Inventory inventory, Player player) {
         return FarmDeviceMenu.server(menuType(), containerId, player, getBlockPos(), getBlockState().getBlock());
     }
 

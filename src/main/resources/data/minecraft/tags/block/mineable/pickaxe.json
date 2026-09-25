@@ -4,6 +4,7 @@
     "homelink_farm:crop_monitor",
     "homelink_farm:irrigation_pump",
     "homelink_farm:copper_sprinkler",
+    "homelink_farm:farmbot_station",
     "homelink_farm:copper_pipe",
     "homelink_farm:waxed_copper_pipe",
     "homelink_farm:exposed_copper_pipe",

@@ -21,6 +21,15 @@ public final class FarmServerConfig {
     public static final ModConfigSpec.IntValue SPRINKLER_RANGE;
     public static final ModConfigSpec.DoubleValue IRRIGATION_GROWTH_BONUS;
 
+    public static final ModConfigSpec.IntValue FARMBOT_BATTERY_CAPACITY;
+    public static final ModConfigSpec.IntValue FARMBOT_LOW_BATTERY_THRESHOLD;
+    public static final ModConfigSpec.DoubleValue FARMBOT_MOVEMENT_CONSUMPTION;
+    public static final ModConfigSpec.DoubleValue FARMBOT_HARVEST_CONSUMPTION;
+    public static final ModConfigSpec.DoubleValue FARMBOT_IDLE_CONSUMPTION;
+    public static final ModConfigSpec.IntValue FARMBOT_RECHARGE_TIME;
+    public static final ModConfigSpec.IntValue FARMBOT_TARGET_RETRY_LIMIT;
+    public static final ModConfigSpec.IntValue FARMBOT_SEARCH_COOLDOWN;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("controller");
@@ -34,7 +43,8 @@ public final class FarmServerConfig {
 
         builder.push("cropMonitor");
         MAX_CROP_MONITOR_VOLUME = builder
-                .comment("Maximum number of blocks (X * Y * Z) in one Crop Monitor zone.")
+                .comment("Maximum number of blocks (X * Y * Z) in a zone drawn with the Farm Connector.",
+                        "The default whole-chunk zone of a Crop Monitor is built by the server and not limited.")
                 .defineInRange("maxCropMonitorVolume", 32768, 64, 262144);
         MAX_ZONE_DISTANCE = builder
                 .comment("Maximum horizontal/vertical distance between a Crop Monitor and any block of its zone.")
@@ -69,6 +79,33 @@ public final class FarmServerConfig {
                 .comment("Growth speed bonus of irrigated crops (0.20 = +20%). Never stacks between sprinklers.",
                         "Implemented as extra vanilla random ticks; the randomTickSpeed game rule is never modified.")
                 .defineInRange("irrigationGrowthBonus", 0.20, 0.0, 1.0);
+        builder.pop();
+
+        builder.push("farmbot");
+        FARMBOT_BATTERY_CAPACITY = builder
+                .comment("Energy units stored by a full FarmBot battery (an internal HomeLink Farm mechanic, not FE).")
+                .defineInRange("farmbotBatteryCapacity", 1000, 100, 100000);
+        FARMBOT_LOW_BATTERY_THRESHOLD = builder
+                .comment("Battery percentage at or below which a FarmBot drops its task and drives back to its station.")
+                .defineInRange("farmbotLowBatteryThreshold", 20, 5, 90);
+        FARMBOT_MOVEMENT_CONSUMPTION = builder
+                .comment("Energy used per block driven.")
+                .defineInRange("farmbotMovementConsumption", 1.0, 0.0, 100.0);
+        FARMBOT_HARVEST_CONSUMPTION = builder
+                .comment("Energy used per harvested crop.")
+                .defineInRange("farmbotHarvestConsumption", 3.0, 0.0, 1000.0);
+        FARMBOT_IDLE_CONSUMPTION = builder
+                .comment("Energy used per minute while waiting away from the station (0 = none).")
+                .defineInRange("farmbotIdleConsumption", 0.0, 0.0, 1000.0);
+        FARMBOT_RECHARGE_TIME = builder
+                .comment("Seconds a docked FarmBot needs to charge from 0 to 100%.")
+                .defineInRange("farmbotRechargeTime", 25, 1, 3600);
+        FARMBOT_TARGET_RETRY_LIMIT = builder
+                .comment("Failed attempts to reach a crop before it is ignored for a while.")
+                .defineInRange("farmbotTargetRetryLimit", 3, 1, 20);
+        FARMBOT_SEARCH_COOLDOWN = builder
+                .comment("Ticks between two searches for a mature crop when none was available.")
+                .defineInRange("farmbotSearchCooldown", 40, 5, 1200);
         builder.pop();
 
         SPEC = builder.build();

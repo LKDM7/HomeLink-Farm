@@ -1,0 +1,7 @@
+{
+  "parent": "homelink_farm:block/farmbot_station_template",
+  "textures": {
+    "panel": "homelink_farm:block/farmbot_station_panel",
+    "port": "homelink_farm:block/device_steel_dark"
+  }
+}

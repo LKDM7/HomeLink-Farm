@@ -120,13 +120,15 @@ public final class CropMonitorGameTests {
         CropScanner scanner = new CropScanner();
         CropZone zone = new CropZone(far, far.offset(15, 0, 15));
         scanner.setZone(zone);
-        CropScanResult result = null;
-        for (int i = 0; i < 20 && result == null; i++) result = scanner.tick(level, CropInspector.INSTANCE);
-        helper.assertTrue(result != null, "Scan of unloaded zone did not complete");
-        helper.assertTrue(result.unloaded() == zone.volume(), "Unloaded positions not reported");
-        helper.assertFalse(result.complete(), "Unloaded zone must be marked partial");
-        helper.assertFalse(level.hasChunk(chunkX, chunkZ), "Scanning force-loaded a chunk");
-        helper.succeed();
+        // One call per tick: live monitors elsewhere may legitimately use the shared budget of a given tick.
+        CropScanResult[] result = new CropScanResult[1];
+        helper.succeedWhen(() -> {
+            if (result[0] == null) result[0] = scanner.tick(level, CropInspector.INSTANCE);
+            helper.assertTrue(result[0] != null, "Scan of unloaded zone did not complete");
+            helper.assertTrue(result[0].unloaded() == zone.volume(), "Unloaded positions not reported");
+            helper.assertFalse(result[0].complete(), "Unloaded zone must be marked partial");
+            helper.assertFalse(level.hasChunk(chunkX, chunkZ), "Scanning force-loaded a chunk");
+        });
     }
 
     @GameTest(template = "empty")

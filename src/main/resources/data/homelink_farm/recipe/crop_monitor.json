@@ -1,12 +1,27 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
-  "pattern": [ "CGC", "CRC", "CSC" ],
+  "pattern": [
+    "CGC",
+    "CBC",
+    "CSC"
+  ],
   "key": {
-    "C": { "item": "minecraft:copper_ingot" },
-    "G": { "tag": "c:glass_panes" },
-    "R": { "item": "minecraft:redstone" },
-    "S": { "tag": "c:seeds" }
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "G": {
+      "tag": "c:glass_panes"
+    },
+    "B": {
+      "item": "homecore:homelink_circuit_board"
+    },
+    "S": {
+      "tag": "c:seeds"
+    }
   },
-  "result": { "id": "homelink_farm:crop_monitor", "count": 1 }
+  "result": {
+    "id": "homelink_farm:crop_monitor",
+    "count": 1
+  }
 }

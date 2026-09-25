@@ -19,7 +19,7 @@ public class FarmDeviceMenu extends AbstractContainerMenu {
     private final Block block;
     private final ContainerLevelAccess access;
 
-    private FarmDeviceMenu(MenuType<?> type, int containerId, BlockPos pos, Block block, ContainerLevelAccess access) {
+    protected FarmDeviceMenu(MenuType<?> type, int containerId, BlockPos pos, Block block, ContainerLevelAccess access) {
         super(type, containerId);
         this.pos = pos.immutable();
         this.block = block;

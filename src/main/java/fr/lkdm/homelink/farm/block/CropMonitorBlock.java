@@ -47,12 +47,12 @@ public class CropMonitorBlock extends AbstractFarmDeviceBlock {
         return new CropMonitorBlockEntity(pos, state);
     }
 
-    /** A freshly placed monitor watches its chunk's crop layers until a zone is chosen. */
+    /** A freshly placed monitor watches its whole chunk, from bottom to top, until another zone is chosen. */
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof CropMonitorBlockEntity monitor && monitor.zone().isEmpty()) {
-            monitor.applyDefaultZone();
+            monitor.applyChunkZone();
         }
     }
 

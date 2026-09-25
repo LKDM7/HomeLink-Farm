@@ -1,6 +1,7 @@
 package fr.lkdm.homelink.farm.registry;
 
 import fr.lkdm.homelink.farm.HomeLinkFarm;
+import fr.lkdm.homelink.farm.menu.FarmBotStationMenu;
 import fr.lkdm.homelink.farm.menu.FarmDeviceMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -19,6 +20,9 @@ public final class ModMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<FarmDeviceMenu>> IRRIGATION_PUMP = MENUS.register("irrigation_pump",
             () -> IMenuTypeExtension.create((id, inventory, buf) -> FarmDeviceMenu.client(ModMenus.IRRIGATION_PUMP.get(), id, inventory, buf)));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<FarmDeviceMenu>> FARMBOT_STATION = MENUS.register("farmbot_station",
+            () -> IMenuTypeExtension.create(FarmBotStationMenu::client));
 
     private ModMenus() {
     }

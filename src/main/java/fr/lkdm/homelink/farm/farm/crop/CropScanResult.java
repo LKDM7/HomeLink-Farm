@@ -23,18 +23,23 @@ import net.minecraft.nbt.CompoundTag;
  * @param samples first located problems (capped at {@link #MAX_SAMPLES}); empty on clients
  * @param unloaded zone positions skipped because their chunk was not loaded
  * @param finishedAt game time at which the pass completed
+ * @param harvestable mature crops a machine can harvest (capped at {@link #MAX_HARVESTABLE}); empty on clients
  */
 public record CropScanResult(int crops, int ready, float maturity, int irrigable, int irrigated, int irrigationOffline,
-                             ProblemCounts problems, List<CropProblem> samples, int unloaded, long finishedAt) {
+                             ProblemCounts problems, List<CropProblem> samples, int unloaded, long finishedAt,
+                             List<BlockPos> harvestable) {
     /** Maximum located problems kept per monitor (bounded memory and packet size). */
     public static final int MAX_SAMPLES = 64;
+    /** Maximum mature positions kept per monitor for the FarmBots (bounded memory). */
+    public static final int MAX_HARVESTABLE = 512;
 
     public CropScanResult {
         samples = List.copyOf(samples);
+        harvestable = List.copyOf(harvestable);
     }
 
     public CropScanResult(int crops, int ready, float maturity, int unloaded, long finishedAt) {
-        this(crops, ready, maturity, 0, 0, 0, ProblemCounts.NONE, List.of(), unloaded, finishedAt);
+        this(crops, ready, maturity, 0, 0, 0, ProblemCounts.NONE, List.of(), unloaded, finishedAt, List.of());
     }
 
     public int growing() {
@@ -84,7 +89,7 @@ public record CropScanResult(int crops, int ready, float maturity, int irrigable
     public static CropScanResult load(CompoundTag tag) {
         return new CropScanResult(tag.getInt("Crops"), tag.getInt("Ready"), tag.getFloat("Maturity"), tag.getInt("Irrigable"),
                 tag.getInt("Irrigated"), tag.getInt("Offline"), ProblemCounts.load(tag.getCompound("Problems")), List.of(),
-                tag.getInt("Unloaded"), tag.getLong("FinishedAt"));
+                tag.getInt("Unloaded"), tag.getLong("FinishedAt"), List.of());
     }
 
     /** Mutable accumulator filled during a pass. */
@@ -100,6 +105,7 @@ public record CropScanResult(int crops, int ready, float maturity, int irrigable
         private final List<CropProblem> samples = new ArrayList<>();
         private int notIrrigatedGrowing;
         private final List<CropProblem> notIrrigatedSamples = new ArrayList<>();
+        private final List<BlockPos> harvestable = new ArrayList<>();
 
         public void addCrop(float maturity, boolean mature) {
             crops++;
@@ -130,6 +136,10 @@ public record CropScanResult(int crops, int ready, float maturity, int irrigable
             if (samples.size() < MAX_SAMPLES) samples.add(new CropProblem(pos, type));
         }
 
+        public void addHarvestable(BlockPos pos) {
+            if (harvestable.size() < MAX_HARVESTABLE) harvestable.add(pos.immutable());
+        }
+
         public void addUnloaded(int count) {
             unloaded += count;
         }
@@ -145,7 +155,7 @@ public record CropScanResult(int crops, int ready, float maturity, int irrigable
             }
             float average = crops == 0 ? 0 : (float) (maturitySum / crops);
             return new CropScanResult(crops, ready, average, irrigable, irrigated, offline, ProblemCounts.of(problemCounts),
-                    samples, unloaded, gameTime);
+                    samples, unloaded, gameTime, harvestable);
         }
     }
 }

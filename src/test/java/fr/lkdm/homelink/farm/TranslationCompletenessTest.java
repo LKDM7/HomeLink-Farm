@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import fr.lkdm.homelink.farm.blockentity.FarmBotStationBlockEntity;
+import fr.lkdm.homelink.farm.farm.bot.FarmBotFault;
+import fr.lkdm.homelink.farm.farm.bot.FarmBotState;
 import fr.lkdm.homelink.farm.farm.controller.LinkResult;
 import fr.lkdm.homelink.farm.farm.crop.ComparatorMode;
 import fr.lkdm.homelink.farm.farm.diagnostic.ProblemType;
@@ -55,10 +58,17 @@ class TranslationCompletenessTest {
         for (PumpStatus status : PumpStatus.values()) expected.add("pump_status.homelink_farm." + lower(status));
         for (ComparatorMode mode : ComparatorMode.values()) expected.add("comparator_mode.homelink_farm." + lower(mode));
         for (RedstoneMode mode : RedstoneMode.values()) expected.add("redstone_mode.homelink_farm." + lower(mode));
+        for (FarmBotState state : FarmBotState.values()) expected.add("farmbot_status.homelink_farm." + lower(state));
+        for (FarmBotFault fault : FarmBotFault.values()) expected.add("farmbot_fault.homelink_farm." + lower(fault));
+        for (var result : FarmBotStationBlockEntity.InstallResult.values()) expected.add("message.homelink_farm.farmbot.install." + lower(result));
+        for (var action : List.of(FarmIds.ACTION_START, FarmIds.ACTION_PAUSE, FarmIds.ACTION_RETURN_HOME)) {
+            expected.add("action.homelink_farm." + action.getPath());
+            expected.add("action.homelink_farm." + action.getPath() + ".description");
+        }
         for (LinkResult result : LinkResult.values()) expected.add(result.translationKey());
         for (HomeNetworkBinding.Result result : HomeNetworkBinding.Result.values()) expected.add("message.homelink_farm.network." + lower(result));
         for (String zone : List.of("set", "too_large", "too_far", "corner_a", "corner_b", "incomplete")) expected.add("message.homelink_farm.zone." + zone);
-        for (String block : List.of("farm_controller", "crop_monitor", "irrigation_pump", "copper_sprinkler", "copper_pipe")) {
+        for (String block : List.of("farm_controller", "crop_monitor", "irrigation_pump", "copper_sprinkler", "copper_pipe", "farmbot_station")) {
             expected.add("tooltip.homelink_farm." + block + ".1");
             expected.add("tooltip.homelink_farm." + block + ".2");
         }
@@ -68,13 +78,16 @@ class TranslationCompletenessTest {
         for (Field field : FarmIds.class.getFields()) {
             if (field.getType() != ResourceLocation.class) continue;
             String name = field.getName();
-            if (name.equals("FARM_CONTROLLER") || name.equals("IRRIGATION_PUMP") || name.startsWith("ACTION_") || Set.of(
+            if (name.equals("FARM_CONTROLLER") || name.equals("IRRIGATION_PUMP") || name.equals("FARMBOT_STATION") || name.startsWith("ACTION_")
+                    || FarmIds.FARMBOT_EVENTS.contains((ResourceLocation) field.get(null)) || Set.of(
                     "CROP_READY", "PROBLEM_DETECTED", "IRRIGATION_FAILURE", "IRRIGATION_RESTORED", "PUMP_OVER_CAPACITY").contains(name)) continue;
             expected.add("metric.homelink_farm." + ((ResourceLocation) field.get(null)).getPath());
         }
         for (String value : List.of("maxLinkDistance", "maxComponentsPerController", "maxCropMonitorVolume", "maxZoneDistance",
                 "cropScanInterval", "cropScanBudgetPerTick", "globalScanBudgetPerTick", "locateDuration", "maxSprinklersPerPump",
-                "maxNetworkNodes", "sprinklerRange", "irrigationGrowthBonus", "controller", "cropMonitor", "irrigation")) {
+                "maxNetworkNodes", "sprinklerRange", "irrigationGrowthBonus", "farmbotBatteryCapacity", "farmbotLowBatteryThreshold",
+                "farmbotMovementConsumption", "farmbotHarvestConsumption", "farmbotIdleConsumption", "farmbotRechargeTime",
+                "farmbotTargetRetryLimit", "farmbotSearchCooldown", "controller", "cropMonitor", "irrigation", "farmbot")) {
             expected.add("homelink_farm.configuration." + value);
             expected.add("homelink_farm.configuration." + value + ".tooltip");
         }

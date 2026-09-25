@@ -27,6 +27,8 @@ public final class HomeCoreIntegration {
                 controller -> new FarmControllerDevice(controller, publisher(controller)));
         DashboardAPI.registerDeviceProvider(ModBlockEntities.IRRIGATION_PUMP.get(),
                 pump -> new IrrigationPumpDevice(pump, publisher(pump)));
+        DashboardAPI.registerDeviceProvider(ModBlockEntities.FARMBOT_STATION.get(),
+                station -> new FarmBotStationDevice(station, publisher(station)));
         HomeLinkFarm.LOGGER.info("HomeLink Farm registered its HomeCore device providers (HomeCore API {})", DashboardAPI.API_VERSION);
     }
 

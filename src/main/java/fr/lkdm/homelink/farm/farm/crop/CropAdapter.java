@@ -1,9 +1,18 @@
 package fr.lkdm.homelink.farm.farm.crop;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Describes how HomeLink Farm reads one family of crops. Public extension point: third-party
@@ -66,5 +75,39 @@ public interface CropAdapter {
      */
     default void applyGrowthTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (state.isRandomlyTicking()) state.randomTick(level, pos, random);
+    }
+
+    /** How a machine (the FarmBot) may harvest this crop once it is mature. */
+    enum HarvestMode {
+        /** Not harvested automatically (stems, multi-block plants...). */
+        NONE,
+        /** Broken for its drops, then replanted with one {@link #replantItem} taken from the harvest. */
+        REPLANT,
+        /** The plant stays: its drops are collected and it goes back to {@link #harvestedState}. */
+        KEEP_PLANT
+    }
+
+    default HarvestMode harvestMode(BlockState state) {
+        return HarvestMode.NONE;
+    }
+
+    /** Items produced by harvesting this mature crop (its loot table by default). */
+    default List<ItemStack> harvestDrops(ServerLevel level, BlockPos pos, BlockState state, @Nullable Entity harvester) {
+        return Block.getDrops(state, level, pos, level.getBlockEntity(pos), harvester, ItemStack.EMPTY);
+    }
+
+    /** Item consumed to replant a {@link HarvestMode#REPLANT} crop (its pick-block item by default, e.g. seeds). */
+    default ItemStack replantItem(LevelReader level, BlockPos pos, BlockState state) {
+        return state.getCloneItemStack(new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false), level, pos, null);
+    }
+
+    /** State placed back when replanting (the youngest stage). */
+    default BlockState replantState(BlockState state) {
+        return state.getBlock().defaultBlockState();
+    }
+
+    /** State left after a {@link HarvestMode#KEEP_PLANT} harvest. */
+    default BlockState harvestedState(BlockState state) {
+        return state;
     }
 }

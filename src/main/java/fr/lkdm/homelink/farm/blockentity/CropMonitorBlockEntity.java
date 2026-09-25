@@ -35,10 +35,6 @@ import org.jetbrains.annotations.Nullable;
 /** Watches a zone of crops with an incremental, budgeted scan. */
 public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
         implements FarmComponent, ServerTickingDevice, DeviceCommandTarget {
-    /** Default zone: the monitor's chunk footprint, from one layer below to one layer above. */
-    public static final int AUTO_BELOW = 1;
-    public static final int AUTO_ABOVE = 1;
-
     @Nullable
     private ControllerLink controllerLink;
     @Nullable
@@ -97,8 +93,22 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
         resetScan();
     }
 
-    public void applyDefaultZone() {
-        setZone(CropZone.chunkAround(getBlockPos(), AUTO_BELOW, AUTO_ABOVE));
+    /** The monitor's whole chunk: 16 x 16 blocks, from the bottom of the world to its build limit. */
+    public CropZone chunkZone() {
+        int minY = level == null ? getBlockPos().getY() : level.getMinBuildHeight();
+        int maxY = level == null ? getBlockPos().getY() : level.getMaxBuildHeight() - 1;
+        return CropZone.chunkColumn(getBlockPos(), minY, maxY);
+    }
+
+    /**
+     * Watches the monitor's whole chunk. Built by the server around the monitor itself, so it is
+     * exempt from the size and distance limits of player-drawn zones; the scan budget per tick
+     * still spreads each pass (about 10 s for a 384-block-high world).
+     */
+    public CropZone applyChunkZone() {
+        zone = chunkZone();
+        resetScan();
+        return zone;
     }
 
     private void resetScan() {
@@ -173,10 +183,8 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
     public void handleCommand(ServerPlayer player, DeviceCommand command, int argument) {
         switch (command) {
             case ZONE_AUTO -> {
-                CropZone auto = CropZone.chunkAround(getBlockPos(), AUTO_BELOW, AUTO_ABOVE);
-                ZoneValidation.Result validation = setZone(auto);
-                player.displayClientMessage(validation.message(auto).withStyle(
-                        validation == ZoneValidation.Result.OK ? ChatFormatting.GREEN : ChatFormatting.RED), true);
+                CropZone auto = applyChunkZone();
+                player.displayClientMessage(ZoneValidation.Result.OK.message(auto).withStyle(ChatFormatting.GREEN), true);
             }
             case ZONE_CLEAR -> clearZone();
             case RESCAN -> scanner.requestPass();

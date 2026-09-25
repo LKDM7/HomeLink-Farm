@@ -19,7 +19,7 @@ class ModelAssetsTest {
     private static final Path BLOCKS = Path.of(System.getProperty("homelink_farm.projectDir", "."))
             .resolve("src/main/resources/assets/homelink_farm/models/block");
     private static final List<String> TEMPLATES = List.of("farm_controller_template", "crop_monitor_template",
-            "irrigation_pump_template", "template_sprinkler", "template_pipe_side", "template_pipe_up",
+            "irrigation_pump_template", "farmbot_station_template", "template_sprinkler", "template_pipe_side", "template_pipe_up",
             "template_pipe_down", "template_pipe_core", "template_pipe_item");
     private static final List<String> DIRECTIONS = List.of("west", "east", "down", "up", "north", "south");
 

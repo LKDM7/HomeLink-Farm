@@ -22,6 +22,7 @@ public final class CropInspector {
                         CropScanResult.Builder pass) {
         boolean mature = adapter.isMature(state);
         pass.addCrop(adapter.maturity(state), mature);
+        if (mature && adapter.harvestMode(state) != CropAdapter.HarvestMode.NONE) pass.addHarvestable(pos);
         if (adapter.acceptsIrrigation(state)) {
             if (coverage.irrigated(pos)) {
                 pass.addIrrigated();

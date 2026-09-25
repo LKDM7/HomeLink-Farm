@@ -1,6 +1,7 @@
 package fr.lkdm.homelink.farm.registry;
 
 import fr.lkdm.homelink.farm.HomeLinkFarm;
+import fr.lkdm.homelink.farm.item.FarmBotItem;
 import fr.lkdm.homelink.farm.item.FarmConnectorItem;
 import java.util.List;
 import net.minecraft.world.item.BlockItem;
@@ -19,6 +20,10 @@ public final class ModItems {
             .map(ITEMS::registerSimpleBlockItem).toList();
     public static final DeferredItem<FarmConnectorItem> FARM_CONNECTOR = ITEMS.register("farm_connector",
             () -> new FarmConnectorItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<BlockItem> FARMBOT_STATION = ITEMS.registerSimpleBlockItem(ModBlocks.FARMBOT_STATION);
+    public static final DeferredItem<FarmBotItem> FARMBOT = ITEMS.register("farmbot",
+            () -> new FarmBotItem(new Item.Properties().stacksTo(1)));
 
     private ModItems() {
     }

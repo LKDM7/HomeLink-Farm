@@ -1,5 +1,6 @@
 package fr.lkdm.homelink.farm.client.screen;
 
+import fr.lkdm.homelink.farm.farm.bot.FarmBotState;
 import fr.lkdm.homelink.farm.farm.irrigation.PumpStatus;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -23,6 +24,20 @@ public final class FarmTheme {
         if (status == PumpStatus.ACTIVE) return ONLINE;
         if (status.isFailure()) return OFFLINE;
         return status == PumpStatus.DISABLED ? MUTED : WARNING;
+    }
+
+    public static int farmBotStatus(FarmBotState state) {
+        if (state.isFault()) return OFFLINE;
+        if (state == FarmBotState.LOW_BATTERY || state == FarmBotState.STORAGE_FULL || state == FarmBotState.PAUSED) return WARNING;
+        if (state == FarmBotState.DOCKED || state == FarmBotState.IDLE) return MUTED;
+        return ONLINE;
+    }
+
+    /** Recessed 18 x 18 item slot whose item sits at (x, y). */
+    public static void slot(GuiGraphics graphics, int x, int y) {
+        graphics.fill(x - 1, y - 1, x + 17, y + 17, 0xFF17191A);
+        graphics.fill(x, y, x + 17, y + 17, 0xFF535659);
+        graphics.fill(x, y, x + 16, y + 16, SURFACE);
     }
 
     /** Framed window: dark rim, light bevel, header band, screws in the corners. */

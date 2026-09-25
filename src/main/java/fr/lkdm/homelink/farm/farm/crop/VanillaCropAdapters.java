@@ -1,6 +1,11 @@
 package fr.lkdm.homelink.farm.farm.crop;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AttachedStemBlock;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
@@ -11,6 +16,7 @@ import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Adapters for vanilla crops. {@link CropBlock} is handled generically (wheat, carrots,
@@ -30,9 +36,22 @@ final class VanillaCropAdapters {
         CropAdapters.register(new PropertyAdapter(StemBlock.class, StemBlock.AGE, true, VANILLA_GROWTH_LIGHT));
         CropAdapters.register(new AttachedStemAdapter());
         CropAdapters.register(new PitcherAdapter());
-        CropAdapters.register(new PropertyAdapter(NetherWartBlock.class, NetherWartBlock.AGE, false, 0));
+        CropAdapters.register(new ReplantedAdapter(NetherWartBlock.class, NetherWartBlock.AGE, false, 0));
         CropAdapters.register(new BerryAdapter());
-        CropAdapters.register(new PropertyAdapter(CocoaBlock.class, CocoaBlock.AGE, false, 0));
+        CropAdapters.register(new ReplantedAdapter(CocoaBlock.class, CocoaBlock.AGE, false, 0));
+    }
+
+    /** Broken when mature and replanted at age 0, keeping its other properties (e.g. cocoa facing). */
+    static final class ReplantedAdapter extends PropertyAdapter {
+        private final IntegerProperty age;
+
+        ReplantedAdapter(Class<?> blockClass, IntegerProperty age, boolean farmland, int light) {
+            super(blockClass, age, farmland, light);
+            this.age = age;
+        }
+
+        @Override public HarvestMode harvestMode(BlockState state) { return HarvestMode.REPLANT; }
+        @Override public BlockState replantState(BlockState state) { return state.setValue(age, 0); }
     }
 
     /** Any {@link CropBlock}, using its public age API. */
@@ -44,6 +63,8 @@ final class VanillaCropAdapters {
         @Override public boolean growsOnFarmland(BlockState state) { return true; }
         @Override public boolean acceptsIrrigation(BlockState state) { return true; }
         @Override public int minimumGrowthLight(BlockState state) { return VANILLA_GROWTH_LIGHT; }
+        @Override public HarvestMode harvestMode(BlockState state) { return HarvestMode.REPLANT; }
+        @Override public BlockState replantState(BlockState state) { return ((CropBlock) state.getBlock()).getStateForAge(0); }
     }
 
     /** Block whose growth is an integer age property. */
@@ -97,6 +118,17 @@ final class VanillaCropAdapters {
         @Override
         public BlockPos lightSamplePos(BlockPos pos, BlockState state) {
             return pos.above();
+        }
+
+        /** Picked like a player does: the bush stays and goes back to its fruitless stage. */
+        @Override public HarvestMode harvestMode(BlockState state) { return HarvestMode.KEEP_PLANT; }
+        @Override public BlockState harvestedState(BlockState state) { return state.setValue(SweetBerryBushBlock.AGE, 1); }
+
+        /** Same amount as a player picking a ripe bush (the bush's loot table only covers breaking it). */
+        @Override
+        public List<ItemStack> harvestDrops(ServerLevel level, BlockPos pos, BlockState state, @Nullable Entity harvester) {
+            int count = 1 + level.random.nextInt(2) + (state.getValue(SweetBerryBushBlock.AGE) == 3 ? 1 : 0);
+            return List.of(new ItemStack(Items.SWEET_BERRIES, count));
         }
     }
 }

@@ -1,6 +1,7 @@
 package fr.lkdm.homelink.farm.registry;
 
 import fr.lkdm.homelink.farm.HomeLinkFarm;
+import fr.lkdm.homelink.farm.item.FarmBotData;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -25,6 +26,11 @@ public final class ModDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<GlobalPos>> ZONE_CORNER_B =
             DATA_COMPONENTS.registerComponentType("zone_corner_b",
                     builder -> builder.persistent(GlobalPos.CODEC).networkSynchronized(GlobalPos.STREAM_CODEC));
+
+    /** Battery and harvest counter of a FarmBot carried as an item. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<FarmBotData>> FARMBOT_DATA =
+            DATA_COMPONENTS.registerComponentType("farmbot_data",
+                    builder -> builder.persistent(FarmBotData.CODEC).networkSynchronized(FarmBotData.STREAM_CODEC));
 
     private ModDataComponents() {
     }

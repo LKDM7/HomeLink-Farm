@@ -32,6 +32,10 @@ public final class FarmAggregator {
         for (LinkedComponent entry : controller.linkedComponents().all()) {
             BlockEntity blockEntity = level.isLoaded(entry.pos()) ? level.getBlockEntity(entry.pos()) : null;
             boolean live = blockEntity instanceof FarmComponent component && component.componentId().equals(entry.id());
+            if (entry.kind() == FarmComponentKind.FARMBOT_STATION) {
+                // Stations carry no crop or irrigation figures.
+                continue;
+            }
             if (live && blockEntity instanceof CropMonitorBlockEntity monitor && monitor.result().isPresent()) {
                 CropScanResult result = monitor.result().get();
                 cache.remember(entry.id(), result);

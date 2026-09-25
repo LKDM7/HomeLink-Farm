@@ -19,6 +19,8 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.FARM_CONNECTOR.get());
                 output.accept(ModItems.IRRIGATION_PUMP.get());
                 output.accept(ModItems.COPPER_SPRINKLER.get());
+                output.accept(ModItems.FARMBOT_STATION.get());
+                output.accept(ModItems.FARMBOT.get());
                 ModItems.PIPES.forEach(pipe -> output.accept(pipe.get()));
             })
             .build());

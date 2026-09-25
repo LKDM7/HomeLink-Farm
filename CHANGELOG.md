@@ -1,5 +1,25 @@
 # Modifications non publiées
 
+## HomeCore 1.6.1 et recettes
+
+- HomeLink Farm requiert désormais **HomeCore 1.6.1** (au lieu de 1.3.0).
+- Les appareils électroniques utilisent les composants communs de HomeCore : microprocesseur pour le Farm Controller et le FarmBot, circuit imprimé pour le Crop Monitor, l'Irrigation Pump, le FarmBot et sa station. Tuyaux, arroseurs et Farm Connector ne changent pas.
+
+## Crop Monitor
+
+- Zone par défaut étendue à **tout le chunk**, du bas du monde à la limite de construction (16 × 384 × 16 dans l'Overworld), à la pose comme avec *Zone 16×16*. Construite par le serveur autour du moniteur, elle n'est pas soumise aux limites des zones tracées au Farm Connector ; son analyse reste répartie par le budget par tick. Les moniteurs déjà posés gardent leur zone jusqu'au prochain *Zone 16×16*.
+
+## FarmBot
+
+- Nouvelle **FarmBot Station** : dock, chargeur, sortie de 9 emplacements et commandes START / PAUSE / RETURN HOME. Elle se relie au Farm Controller avec le Farm Connector et travaille avec le Crop Monitor de la ferme le plus proche (bouton *Moniteur* pour en changer).
+- Nouveau **FarmBot** : robot entité qui se déplace réellement jusqu'aux cultures mûres signalées par le Crop Monitor, les récolte, les replante avec une partie de la récolte, revient se vider et se recharger. Batterie interne (retour à 20 %), 9 emplacements, 15 états visibles sur son voyant et dans l'écran de la station.
+- `CropAdapter` décrit désormais la récolte (`REPLANT`, `KEEP_PLANT`, `NONE`) : blé, carottes, pommes de terre, betteraves, verrues du Nether, cacao et baies sucrées sont pris en charge, ainsi que les cultures modées dérivées de `CropBlock`.
+- Le Crop Monitor retient pendant son analyse les positions des cultures mûres récoltables (512 au plus, jamais sauvegardées).
+- La station est un appareil HomeCore : 7 métriques, actions `start` / `pause` / `return_home` (permission CONTROL) et 6 événements publiés sur transition.
+- Aucune perte ni duplication d'objets, aucun chunk chargé, pas de piétinement de la terre labourée. Section `farmbot` de la configuration serveur (8 réglages).
+- 21 GameTests FarmBot et un scénario client dédié (`-PsmokeScenario=farmbot`).
+- Tests de performance de l'analyse plus fiables : le pire tick est mesuré après le préchauffage de la JVM, et le test des chunks déchargés n'appelle plus l'analyse 20 fois dans le même tick.
+
 - Portée verticale des arroseurs posés et suspendus augmentée à 12 blocs vers le bas ; aide et tests des limites mis à jour.
 - Arroseurs immergeables (waterlogged) comme les tuyaux : l'eau qui coule ne les emporte plus.
 - Nom personnalisé d'une machine affiché en doré dans l'en-tête de son écran.

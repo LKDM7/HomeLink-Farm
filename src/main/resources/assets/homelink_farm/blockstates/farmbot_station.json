@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,linked=false": {
+      "model": "homelink_farm:block/farmbot_station"
+    },
+    "facing=north,linked=true": {
+      "model": "homelink_farm:block/farmbot_station_linked"
+    },
+    "facing=east,linked=false": {
+      "model": "homelink_farm:block/farmbot_station",
+      "y": 90
+    },
+    "facing=east,linked=true": {
+      "model": "homelink_farm:block/farmbot_station_linked",
+      "y": 90
+    },
+    "facing=south,linked=false": {
+      "model": "homelink_farm:block/farmbot_station",
+      "y": 180
+    },
+    "facing=south,linked=true": {
+      "model": "homelink_farm:block/farmbot_station_linked",
+      "y": 180
+    },
+    "facing=west,linked=false": {
+      "model": "homelink_farm:block/farmbot_station",
+      "y": 270
+    },
+    "facing=west,linked=true": {
+      "model": "homelink_farm:block/farmbot_station_linked",
+      "y": 270
+    }
+  }
+}

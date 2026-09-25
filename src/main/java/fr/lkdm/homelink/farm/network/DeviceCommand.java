@@ -10,7 +10,11 @@ public enum DeviceCommand {
     RESCAN(true),
     TOGGLE_ENABLED(true),
     CYCLE_REDSTONE(true),
-    CYCLE_COMPARATOR(true);
+    CYCLE_COMPARATOR(true),
+    FARMBOT_START(true),
+    FARMBOT_PAUSE(true),
+    FARMBOT_RETURN(true),
+    CYCLE_MONITOR(true);
 
     private final boolean modifiesConfiguration;
 

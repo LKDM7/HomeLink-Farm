@@ -3,6 +3,7 @@ package fr.lkdm.homelink.farm.registry;
 import fr.lkdm.homelink.farm.HomeLinkFarm;
 import fr.lkdm.homelink.farm.blockentity.CopperSprinklerBlockEntity;
 import fr.lkdm.homelink.farm.blockentity.CropMonitorBlockEntity;
+import fr.lkdm.homelink.farm.blockentity.FarmBotStationBlockEntity;
 import fr.lkdm.homelink.farm.blockentity.FarmControllerBlockEntity;
 import fr.lkdm.homelink.farm.blockentity.IrrigationPumpBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -29,6 +30,10 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CopperSprinklerBlockEntity>> COPPER_SPRINKLER =
             BLOCK_ENTITY_TYPES.register("copper_sprinkler", () -> BlockEntityType.Builder
                     .of(CopperSprinklerBlockEntity::new, ModBlocks.COPPER_SPRINKLER.get()).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FarmBotStationBlockEntity>> FARMBOT_STATION =
+            BLOCK_ENTITY_TYPES.register("farmbot_station", () -> BlockEntityType.Builder
+                    .of(FarmBotStationBlockEntity::new, ModBlocks.FARMBOT_STATION.get()).build(null));
 
     private ModBlockEntities() {
     }

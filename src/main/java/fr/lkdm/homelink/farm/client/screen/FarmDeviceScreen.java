@@ -110,6 +110,11 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         return bottomRow();
     }
 
+    /** Whether the status panel and its lines are shown (a screen may swap them for another view). */
+    protected boolean showStatus() {
+        return true;
+    }
+
     /** Adds command buttons; use {@link #leftPos}/{@link #topPos}. */
     protected void addDeviceWidgets() {
     }
@@ -232,6 +237,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         }
         FarmTheme.divider(graphics, leftPos + 10, topPos + 52, imageWidth - 20);
         FarmTheme.divider(graphics, leftPos + 10, topPos + buttonsTop() - 4, imageWidth - 20);
+        if (!showStatus()) return;
         int count = device().map(device -> lines(device).size()).orElse(1);
         FarmTheme.panel(graphics, leftPos + 10, topPos + PANEL_TOP, imageWidth - 20, count * LINE_HEIGHT + 7);
     }
@@ -253,6 +259,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
             graphics.drawString(font, Component.translatable("gui.homelink_farm.help.title"), 12, 30, FarmTheme.ACCENT, false);
             return;
         }
+        if (!showStatus()) return;
         if (device.isEmpty()) {
             graphics.drawString(font, Component.translatable("gui.homelink_farm.unavailable"), 16, LINES_TOP, BAD, false);
             return;

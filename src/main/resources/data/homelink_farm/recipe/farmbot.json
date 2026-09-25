@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "IMI",
+    "CBC",
+    "IHI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "homecore:homelink_microprocessor"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "B": {
+      "item": "homecore:homelink_circuit_board"
+    },
+    "H": {
+      "tag": "c:chests/wooden"
+    }
+  },
+  "result": {
+    "id": "homelink_farm:farmbot",
+    "count": 1
+  }
+}

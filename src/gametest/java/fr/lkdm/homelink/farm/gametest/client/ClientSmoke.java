@@ -36,7 +36,8 @@ public final class ClientSmoke {
     private static final String SCENARIO = System.getProperty("homelink_farm.clientSmoke", "");
     private static final boolean ENABLED = !SCENARIO.isEmpty() && !SCENARIO.equals("false");
     private static final boolean PLAYER = SCENARIO.equals("player");
-    private static final long TIMEOUT_NANOS = (PLAYER ? 420L : 90L) * 1_000_000_000L;
+    // The default run includes the FarmBot scene, whose robot really drives and harvests (about 30 s).
+    private static final long TIMEOUT_NANOS = (PLAYER ? 420L : 180L) * 1_000_000_000L;
     /** Folder of the world created for this run (used to reload it). */
     static String levelId;
 
@@ -138,11 +139,14 @@ public final class ClientSmoke {
                     HelpSmoke.define();
                 } else if (SCENARIO.equals("overlays")) {
                     OverlaySmoke.define();
+                } else if (SCENARIO.equals("farmbot")) {
+                    FarmBotSmoke.define();
                 } else if (PLAYER) {
                     PlayerSmoke.define();
                 } else {
                     AssetSmoke.define();
                     SmokeScenario.define();
+                    FarmBotSmoke.define();
                 }
                 HomeLinkFarm.LOGGER.info("HOMELINK_FARM_SMOKE world ready, {} steps", STEPS.size());
                 return;

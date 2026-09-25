@@ -222,7 +222,8 @@ final class PlayerSmoke {
         step("monitor has default chunk zone", () -> clientEntity(MONITOR, CropMonitorBlockEntity.class) != null
                 && clientEntity(MONITOR, CropMonitorBlockEntity.class).zone().isPresent(), () -> {
             CropZone zone = clientEntity(MONITOR, CropMonitorBlockEntity.class).zone().get();
-            check(zone.equals(CropZone.chunkAround(MONITOR, 1, 1)), "default zone " + zone);
+            var level = mc().level;
+            check(zone.equals(CropZone.chunkColumn(MONITOR, level.getMinBuildHeight(), level.getMaxBuildHeight() - 1)), "default zone " + zone);
         });
 
         // 2. Farm Connector: select the controller, link the monitor, set zone A/B while sneaking.

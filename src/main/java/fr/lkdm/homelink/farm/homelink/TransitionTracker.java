@@ -1,5 +1,7 @@
 package fr.lkdm.homelink.farm.homelink;
 
+import fr.lkdm.homelink.farm.farm.bot.FarmBotSnapshot;
+import fr.lkdm.homelink.farm.farm.bot.FarmBotState;
 import fr.lkdm.homelink.farm.farm.controller.FarmSummary;
 import fr.lkdm.homelink.farm.farm.diagnostic.ProblemType;
 import fr.lkdm.homelink.farm.farm.irrigation.PumpStatus;
@@ -27,6 +29,9 @@ public final class TransitionTracker {
     private int problems;
     private int pumpFaults;
     private PumpStatus pumpStatus;
+    private FarmBotState botState;
+    /** Harvest counter when the last harvest_complete was published. */
+    private int harvestBaseline;
 
     public TransitionTracker(UUID source) {
         this.source = source;
@@ -92,6 +97,48 @@ public final class TransitionTracker {
             events.add(event(FarmIds.IRRIGATION_FAILURE, DeviceEvent.Severity.WARNING, now, data));
         } else if (status == PumpStatus.ACTIVE && previous != null && previous.isFailure()) {
             events.add(event(FarmIds.IRRIGATION_RESTORED, DeviceEvent.Severity.INFO, now, data));
+        }
+        return events;
+    }
+
+    /**
+     * FarmBot transitions: low battery, storage full, stuck, output blocked, returned, and
+     * harvest_complete when the robot comes home with nothing left to harvest after a job.
+     */
+    public List<DeviceEvent> farmBot(java.util.Optional<FarmBotSnapshot> snapshot, Instant now) {
+        List<DeviceEvent> events = new ArrayList<>();
+        FarmBotState previous = botState;
+        FarmBotState current = snapshot.map(FarmBotSnapshot::state).orElse(null);
+        botState = current;
+        if (!initialized) {
+            initialized = true;
+            harvestBaseline = snapshot.map(FarmBotSnapshot::harvested).orElse(0);
+            return events;
+        }
+        if (current == null || current == previous) return events;
+        FarmBotSnapshot bot = snapshot.get();
+        Map<String, String> data = new LinkedHashMap<>();
+        data.put("status", bot.state().serializedName());
+        data.put("fault", bot.fault().serializedName());
+        data.put("battery", Integer.toString(bot.battery()));
+        data.put("storage", Integer.toString(bot.storage()));
+        data.put("harvested", Integer.toString(bot.harvested()));
+        switch (current) {
+            case LOW_BATTERY -> events.add(event(FarmIds.FARMBOT_LOW_BATTERY, DeviceEvent.Severity.WARNING, now, data));
+            case STORAGE_FULL -> events.add(event(FarmIds.FARMBOT_STORAGE_FULL, DeviceEvent.Severity.INFO, now, data));
+            case STUCK -> events.add(event(FarmIds.FARMBOT_STUCK, DeviceEvent.Severity.WARNING, now, data));
+            case OUTPUT_BLOCKED -> events.add(event(FarmIds.FARMBOT_OUTPUT_BLOCKED, DeviceEvent.Severity.WARNING, now, data));
+            case DOCKED -> {
+                if (previous == null || !(previous.returning() || previous == FarmBotState.STUCK)) break;
+                events.add(event(FarmIds.FARMBOT_RETURNED, DeviceEvent.Severity.INFO, now, data));
+                if (previous == FarmBotState.RETURNING && bot.harvested() > harvestBaseline) {
+                    Map<String, String> job = new LinkedHashMap<>(data);
+                    job.put("crops", Integer.toString(bot.harvested() - harvestBaseline));
+                    events.add(event(FarmIds.FARMBOT_HARVEST_COMPLETE, DeviceEvent.Severity.INFO, now, job));
+                    harvestBaseline = bot.harvested();
+                }
+            }
+            default -> { }
         }
         return events;
     }

@@ -1,16 +1,17 @@
 # HomeLink Farm 1.0.0
 
-Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer, optimiser et connecter une exploitation Minecraft, sans jamais jouer à la place du joueur (pas de plantation, de récolte ni de création de ressources).
+Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer, optimiser et connecter une exploitation Minecraft. Aucune ressource n'est jamais créée ; seul le **FarmBot**, un robot que le joueur fabrique et installe, récolte et replante, en se déplaçant réellement jusqu'aux cultures.
 
-**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.3.0+ (obligatoire).**
+**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.6.1+ (obligatoire).**
 
 ```text
 Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +20 % de croissance
+Crop Monitor → FarmBot Station → FarmBot : roule → récolte → replante → revient → décharge → se recharge
 ```
 
 ## Installation
 
-1. Installer **HomeCore 1.3.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) côté client et serveur.
+1. Installer **HomeCore 1.6.1** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) côté client et serveur.
 2. Installer `homelink_farm-1.0.0.jar` dans `mods` côté client et serveur.
 
 Compilation depuis les sources (JDK 21) : publier d'abord HomeCore dans le Maven local (`./gradlew.bat publishToMavenLocal` dans le dépôt HomeCore), puis :
@@ -28,7 +29,9 @@ Compilation depuis les sources (JDK 21) : publier d'abord HomeCore dans le Maven
 | **Farm Connector** | Outil de configuration (non consommé). |
 | **Irrigation Pump** | Cœur hydraulique : exige une vraie source d'eau adjacente (ne crée jamais d'eau), ou se pose **sous l'eau** dans une source (bloc immergé), appareil HomeCore. |
 | **Copper Irrigation Pipe** | Tuyau connecté automatiquement sur ses 6 faces ; s'oxyde comme le cuivre vanilla (4 stades + 4 variantes cirées). |
-| **Copper Sprinkler** | Irrigue la zone autour de lui tant que son réseau est ACTIVE. Se pose sur un tuyau, ou **dessous** (clic sur la face inférieure) pour être suspendu, tête vers le bas. |
+| **Copper Sprinkler** | Irrigue la zone autour de lui tant que son réseau est ACTIVE. Se pose sur un tuyau, ou **dessous** (clic sur la face inférieure) pour être suspendu, tête vers le bas. Peut être immergé (waterlogged). |
+| **FarmBot Station** | Dock, chargeur, point de départ et de retour d'un FarmBot, sortie de 9 emplacements, commandes START / PAUSE / RETURN HOME, appareil HomeCore. Le robot se gare sur le bloc **devant** la station (face FACING). |
+| **FarmBot** | Robot agricole autonome (entité, environ 0,8 bloc de large) : 9 emplacements, batterie interne ; récolte et replante les cultures mûres signalées par le Crop Monitor de sa station. |
 
 Les appareils connectés (Controller relié à au moins un composant ou à un réseau HomeLink, Monitor et Pump reliés à un Controller ou à un réseau HomeLink) font clignoter leurs voyants lumineux, visibles aussi la nuit.
 
@@ -45,7 +48,7 @@ En tenant le connecteur, le contrôleur sélectionné est entouré en vert et la
 
 Toute la logique passe par `FarmLinkService` (serveur) : un futur connecteur universel HomeLink pourra le remplacer sans changer les blocs.
 
-Un Crop Monitor posé surveille par défaut 16 × 16 blocs alignés sur son chunk (une couche en dessous à une au-dessus). Son écran propose aussi *Zone 16×16*, *Effacer*, *Rescanner*, *Diagnostic / Localiser*, *Voir l'irrigation*, *Voir zone* (contour cyan de la zone pendant 10 s) et le mode comparateur. Chaque objet décrit son rôle dans son infobulle.
+Un Crop Monitor posé surveille par défaut **tout son chunk** : 16 × 16 blocs, du bas du monde jusqu'à la limite de construction (16 × 384 × 16 dans l'Overworld). Cette zone, construite par le serveur autour du moniteur, échappe aux limites de volume et de distance des zones tracées au Farm Connector ; son analyse reste étalée par le budget par tick (environ 10 s par passe). Son écran propose aussi *Zone 16×16*, *Effacer*, *Rescanner*, *Diagnostic / Localiser*, *Voir l'irrigation*, *Voir zone* (contour cyan de la zone pendant 10 s) et le mode comparateur. Chaque objet décrit son rôle dans son infobulle.
 
 ## Règles de jeu
 
@@ -94,6 +97,40 @@ Un arroseur actif hydrate aussi la terre labourée de sa zone, via le `FarmlandW
 
 Non implémentée, volontairement. La pluie hydrate la terre mais n'accélère pas la croissance : suspendre les arroseurs sous la pluie ne ferait que retirer le bonus, sans cohérence avec le jeu vanilla.
 
+## FarmBot
+
+### Installation
+
+1. Poser une **FarmBot Station** : sa face avant regarde le joueur, le robot se garera juste devant.
+2. La relier au **Farm Controller** avec le Farm Connector, comme un moniteur ou une pompe. Elle choisit d'elle-même le Crop Monitor de la ferme le plus proche ; le bouton *Moniteur* passe aux suivants.
+3. Clic droit sur la station avec un **FarmBot** : le serveur vérifie les droits, que la station est libre et que l'emplacement devant elle est dégagé, puis le robot apparaît à quai. Une station a un seul robot ; un robot n'appartient qu'à une station.
+
+### Cycle de travail
+
+Le robot ne scanne jamais la ferme : pendant son analyse, le Crop Monitor retient les positions des cultures mûres récoltables (512 au plus). Le robot choisit la plus proche qui est toujours mûre sur le serveur, dans la zone du moniteur et dans un chunk chargé. Il s'y rend par pathfinding (il contourne murs, clôtures, trous et eau, et roule entre les rangs sans piétiner la terre labourée ni abîmer les jeunes cultures), la récolte, puis la replante avec une partie de la récolte : une graine pour le blé, une carotte pour la carotte… Sans rien à replanter, l'emplacement reste vide : rien n'est créé.
+
+Il revient à sa station quand sa batterie atteint **20 %**, quand ses 9 emplacements sont occupés (STORAGE FULL), quand il n'y a plus rien à récolter, ou sur *Retour station*. À quai, il décharge progressivement dans la sortie de la station puis se recharge (environ 25 s de 0 à 100 %) ; il repart à partir de 80 % si des cultures sont mûres. Si la sortie est pleine, il garde son chargement et attend (OUTPUT BLOCKED).
+
+États : DOCKED, IDLE, SEARCHING, MOVING, HARVESTING, RETURNING, UNLOADING, CHARGING, PAUSED, STORAGE FULL, OUTPUT BLOCKED, LOW BATTERY, OUT OF POWER, STUCK, ERROR. Le voyant de l'antenne les résume : cyan en route, orange en récolte, vert pulsé en charge, ambre clignotant batterie faible, rouge clignotant bloqué.
+
+### Stratégies de récolte (CropAdapter)
+
+| Culture | Stratégie |
+| --- | --- |
+| Blé, carottes, pommes de terre, betteraves, cultures modées dérivées de `CropBlock` | cassée puis replantée à l'âge 0 |
+| Verrues du Nether, cacao | cassés puis replantés (le cacao garde sa face) |
+| Baies sucrées | cueillies, le buisson reste (âge 1) |
+| Tiges de melon et de citrouille, plante carnivore | non récoltées |
+
+### Robustesse
+
+- **Aucune perte ni duplication** : ce qui ne rentre pas dans le robot tombe au sol sur la culture. Ramasser le robot (accroupi + clic droit) rend son chargement ; le frapper, un `/kill` ou le vide le font tomber avec son chargement. Les autres dégâts l'épargnent.
+- **Batterie vide** : il s'arrête sur place (OUT OF POWER), sans téléportation. On le ramasse, ou on le pousse sur son quai pour qu'il se recharge.
+- **Cible inaccessible** : après 3 tentatives, la culture est ignorée pendant une minute (TARGET UNREACHABLE). Station inaccessible ou quai obstrué : STUCK, avec un nouvel essai toutes les 5 s.
+- **Chunks** : le robot ne charge aucun chunk. Une cible dans un chunk déchargé est ignorée ; si sa station est déchargée, il attend sur place.
+- **Station cassée** : sa sortie tombe au sol ; le robot reste là, en ERROR, jusqu'à ce qu'on le ramasse.
+- **Plusieurs robots** sur un même moniteur se réservent leurs cibles et ne visent jamais la même plante.
+
 ## Vue irrigation (SHOW IRRIGATION)
 
 Touche **`I`** (configurable), ou bouton *Voir l'irrigation* dans les écrans du moniteur et de la pompe. Des repères fins suivent le relief juste au-dessus des cultures, avec une pulsation lente et un petit halo autour des arroseurs :
@@ -111,13 +148,14 @@ Les zones du moniteur et du connecteur utilisent des coins lumineux et des point
 
 HomeLink Farm consomme uniquement l'API publique `fr.lkdm.homecore.api` : `DashboardAPI`, `DashboardDevice`, `DeviceMetric`, `DeviceAction`, `DeviceEvent` et `HomeNetworkManager`. Il ne dépend ni de HomeLink Dashboard, ni de HomeLink Tasks, ni de HomeLink Storage, ni de Holographique Map : ces mods lisent les données génériques via HomeCore.
 
-Le Farm Controller et l'Irrigation Pump s'enregistrent via le système provider + `discover` au chargement de leur bloc, et se désenregistrent au déchargement. En cas de collision d'UUID (bloc copié), la copie reçoit une nouvelle identité.
+Le Farm Controller, l'Irrigation Pump et la FarmBot Station s'enregistrent via le système provider + `discover` au chargement de leur bloc, et se désenregistrent au déchargement. En cas de collision d'UUID (bloc copié), la copie reçoit une nouvelle identité.
 
 Un appareil se rattache à un **HomeNetwork** via le bouton *HomeLink : réseau* de son écran. Il faut la permission `MANAGE_NETWORK` sur le nouveau réseau comme sur l'ancien. Un appareil détruit est retiré de son réseau.
 
 | Appareil | Métriques | Actions | Événements |
 | --- | --- | --- | --- |
 | `homelink_farm:farm_controller` | `crop_count`, `ready_percentage`, `maturity`, `irrigation_coverage`, `irrigated_crops`, `problem_count`, `crop_areas`, `pumps`, `sprinklers_connected`, `sprinkler_capacity`, `growth_bonus` | `rescan` (CONTROL) | `crop_ready`, `problem_detected`, `irrigation_failure`, `irrigation_restored` |
+| `homelink_farm:farmbot_station` | `farmbot_installed`, `farmbot_status`, `farmbot_battery`, `farmbot_storage`, `farmbot_harvested`, `farmbot_current_target`, `station_output_usage` | `start`, `pause`, `return_home` (boutons, CONTROL) | `farmbot_low_battery`, `farmbot_storage_full`, `farmbot_stuck`, `farmbot_output_blocked`, `farmbot_returned`, `farmbot_harvest_complete` |
 | `homelink_farm:irrigation_pump` | `pump_status`, `enabled`, `water_available`, `sprinklers_connected`, `sprinkler_capacity`, `irrigated_crops`, `over_capacity` | `enabled` (toggle, CONTROL) | `pump_over_capacity`, `irrigation_failure`, `irrigation_restored` |
 
 Tous les identifiants sont dans l'espace de noms `homelink_farm`. Les événements sont émis **sur transition uniquement** :
@@ -141,7 +179,7 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 | --- | --- | --- |
 | `controller.maxLinkDistance` | 64 | Distance maximale contrôleur ↔ composant |
 | `controller.maxComponentsPerController` | 32 | Composants par contrôleur |
-| `cropMonitor.maxCropMonitorVolume` | 32768 | Volume maximal d'une zone (32 × 32 × 32) |
+| `cropMonitor.maxCropMonitorVolume` | 32768 | Volume maximal d'une zone tracée au Farm Connector (32 × 32 × 32) ; la zone du chunk entier n'est pas limitée |
 | `cropMonitor.maxZoneDistance` | 48 | Distance maximale moniteur ↔ zone |
 | `cropMonitor.cropScanInterval` | 100 | Ticks entre deux passes d'analyse |
 | `cropMonitor.cropScanBudgetPerTick` | 512 | Positions analysées par moniteur et par tick |
@@ -151,6 +189,14 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 | `irrigation.maxNetworkNodes` | 1024 | Taille maximale d'un réseau |
 | `irrigation.sprinklerRange` | 2 | Portée horizontale (2 = 5 × 5) |
 | `irrigation.irrigationGrowthBonus` | **0.20** | Bonus de croissance (+20 %) |
+| `farmbot.farmbotBatteryCapacity` | 1000 | Énergie d'une batterie pleine (mécanique interne, pas des FE) |
+| `farmbot.farmbotLowBatteryThreshold` | **20** | Pourcentage de retour à la station |
+| `farmbot.farmbotMovementConsumption` | 1.0 | Énergie par bloc parcouru |
+| `farmbot.farmbotHarvestConsumption` | 3.0 | Énergie par culture récoltée |
+| `farmbot.farmbotIdleConsumption` | 0.0 | Énergie par minute en attente hors de la station |
+| `farmbot.farmbotRechargeTime` | 25 | Secondes de 0 à 100 % à quai |
+| `farmbot.farmbotTargetRetryLimit` | 3 | Échecs avant d'ignorer une cible |
+| `farmbot.farmbotSearchCooldown` | 40 | Ticks entre deux recherches sans résultat |
 
 ## Sécurité et performances
 
@@ -160,7 +206,8 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 - **Aucun chargement forcé de chunk** : un chunk déchargé est marqué « partiel » ; le contrôleur réutilise alors les dernières valeurs connues, signalées comme obsolètes.
 - **Caches non sauvegardés** : résultats d'analyse, couverture, réseaux. Seules la configuration et l'identité sont persistées.
 - **Synchronisation** : les clients ne reçoivent les données qu'en cas de changement. La liste des problèmes n'est envoyée qu'aux joueurs qui regardent le moniteur.
-- **Mesures en GameTest** : zone maximale de 32 768 blocs analysée en 64 ticks (moins de 3 ms au pire tick, démarrage de la JVM compris) ; couverture de 40 arroseurs reconstruite en environ 1 ms ; passe de croissance à environ 0,004 ms toutes les 20 ticks.
+- **FarmBot** : recherche de cible dans la liste du moniteur (512 positions) en 0,1 ms, au plus toutes les 2 s par robot ; chemin recalculé au plus une fois par seconde.
+- **Mesures en GameTest** : zone maximale de 32 768 blocs analysée en 64 ticks (moins de 10 ms au pire tick, mesuré après le préchauffage de la JVM) ; couverture de 40 arroseurs reconstruite en environ 1 ms ; passe de croissance à environ 0,004 ms toutes les 20 ticks.
 
 ## API pour les autres mods
 
@@ -168,7 +215,7 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 CropAdapters.register(new MyCropAdapter()); // pendant le setup ; les adaptateurs enregistrés en dernier ont la priorité
 ```
 
-`CropAdapter` décrit l'âge, l'âge maximal, la maturité, la terre labourée, la compatibilité avec l'irrigation, le seuil de lumière et l'application d'un tick de croissance.
+`CropAdapter` décrit l'âge, l'âge maximal, la maturité, la terre labourée, la compatibilité avec l'irrigation, le seuil de lumière et l'application d'un tick de croissance, ainsi que la récolte par le FarmBot : `harvestMode` (`REPLANT`, `KEEP_PLANT` ou `NONE`), `harvestDrops`, `replantItem`, `replantState` et `harvestedState`.
 
 ## Vérification
 
@@ -182,6 +229,7 @@ CropAdapters.register(new MyCropAdapter()); // pendant le setup ; les adaptateur
 ./gradlew.bat runClientSmoke -PsmokeScenario=player        # vrai client joué via les entrées joueur (clics, touche I, sauvegarde/rechargement, mesure du +20 %)
 ./gradlew.bat runClientSmoke -PsmokeScenario=help -PsmokeLanguage=fr_fr # guides des trois machines, défilement, redimensionnement et conservation du nom
 ./gradlew.bat runClientSmoke -PsmokeScenario=overlays -PsmokeLanguage=fr_fr # terrain en terrasses, irrigation active/arrêtée/en panne, zones et diagnostic
+./gradlew.bat runClientSmoke -PsmokeScenario=farmbot       # FarmBot à quai, écrans de la station, récolte réelle d'un champ, voyant de nuit
 ```
 
 Les GameTests, le smoke client (captures dans `build/client-smoke/screenshots`) et les fixtures sont dans le source set `gametest`, **exclu du JAR**.

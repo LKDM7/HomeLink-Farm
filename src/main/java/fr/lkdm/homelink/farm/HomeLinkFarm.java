@@ -2,6 +2,10 @@ package fr.lkdm.homelink.farm;
 
 import com.mojang.logging.LogUtils;
 import fr.lkdm.homelink.farm.config.FarmServerConfig;
+import fr.lkdm.homelink.farm.entity.FarmBotEntity;
+import fr.lkdm.homelink.farm.farm.bot.FarmBotClaims;
+import fr.lkdm.homelink.farm.registry.ModEntities;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import fr.lkdm.homelink.farm.homelink.HomeCoreIntegration;
 import fr.lkdm.homelink.farm.network.ModPayloads;
 import fr.lkdm.homelink.farm.registry.ModBlockEntities;
@@ -35,6 +39,7 @@ public final class HomeLinkFarm {
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModBlockEntities.BLOCK_ENTITY_TYPES.register(modBus);
+        ModEntities.ENTITY_TYPES.register(modBus);
         ModMenus.MENUS.register(modBus);
         ModDataComponents.DATA_COMPONENTS.register(modBus);
         ModCreativeTabs.TABS.register(modBus);
@@ -42,6 +47,8 @@ public final class HomeLinkFarm {
         container.registerConfig(ModConfig.Type.SERVER, FarmServerConfig.SPEC);
         modBus.addListener(ModPayloads::register);
         modBus.addListener(this::commonSetup);
+        modBus.addListener(ModEntities::registerAttributes);
+        NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onFarmlandTrample);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onLevelTick);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onChunkLoad);
@@ -56,6 +63,11 @@ public final class HomeLinkFarm {
         if (event.getLevel() instanceof ServerLevel level) IrrigationManager.chunkChanged(level, event.getChunk().getPos());
     }
 
+    /** FarmBots never trample farmland, whatever their size or fall height. */
+    private static void onFarmlandTrample(BlockEvent.FarmlandTrampleEvent event) {
+        if (event.getEntity() instanceof FarmBotEntity) event.setCanceled(true);
+    }
+
     private static void onLevelTick(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel level) IrrigationGrowth.tick(level);
     }
@@ -64,6 +76,7 @@ public final class HomeLinkFarm {
         if (event.getLevel() instanceof ServerLevel level) {
             IrrigationManager.forget(level);
             fr.lkdm.homelink.farm.farm.crop.LoadedMonitors.forget(level);
+            FarmBotClaims.forget(level);
         }
     }
 

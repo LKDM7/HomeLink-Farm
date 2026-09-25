@@ -11,22 +11,25 @@ import org.junit.jupiter.api.Test;
 
 class CropZoneTest {
     @Test
-    void chunkZoneCoversExactlyItsChunkAcrossPositiveAndNegativeBoundaries() {
+    void chunkZoneCoversExactlyItsWholeChunkAcrossPositiveAndNegativeBoundaries() {
         for (int x : new int[] {-17, -16, -1, 0, 15, 16}) {
             for (int z : new int[] {-17, -16, -1, 0, 15, 16}) {
                 BlockPos monitor = new BlockPos(x, 64, z);
-                CropZone zone = CropZone.chunkAround(monitor, 1, 1);
+                // Overworld: from -64 to the build limit (319), 384 blocks high.
+                CropZone zone = CropZone.chunkColumn(monitor, -64, 319);
                 assertEquals(16, zone.sizeX());
                 assertEquals(16, zone.sizeZ());
-                assertEquals(768, zone.volume());
-                assertEquals(63, zone.min().getY());
-                assertEquals(65, zone.max().getY());
+                assertEquals(384, zone.sizeY());
+                assertEquals(16L * 16 * 384, zone.volume());
+                assertEquals(-64, zone.min().getY());
+                assertEquals(319, zone.max().getY());
                 assertEquals(x >> 4, zone.min().getX() >> 4);
                 assertEquals(x >> 4, zone.max().getX() >> 4);
                 assertEquals(z >> 4, zone.min().getZ() >> 4);
                 assertEquals(z >> 4, zone.max().getZ() >> 4);
                 assertTrue(zone.contains(monitor));
-                assertEquals(ZoneValidation.Result.OK, ZoneValidation.validate(monitor, zone, 32768, 48));
+                // Larger than a player may draw: the server-built chunk zone is exempt from these limits.
+                assertEquals(ZoneValidation.Result.TOO_LARGE, ZoneValidation.validate(monitor, zone, 32768, 48));
             }
         }
     }

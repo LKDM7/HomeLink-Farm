@@ -3,6 +3,7 @@ package fr.lkdm.homelink.farm.registry;
 import fr.lkdm.homelink.farm.HomeLinkFarm;
 import fr.lkdm.homelink.farm.block.CopperSprinklerBlock;
 import fr.lkdm.homelink.farm.block.CropMonitorBlock;
+import fr.lkdm.homelink.farm.block.FarmBotStationBlock;
 import fr.lkdm.homelink.farm.block.FarmControllerBlock;
 import fr.lkdm.homelink.farm.block.IrrigationPumpBlock;
 import fr.lkdm.homelink.farm.block.pipe.CopperPipeBlock;
@@ -34,7 +35,11 @@ public final class ModBlocks {
             () -> new CopperSprinklerBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_ORANGE).strength(2.0F, 6.0F).sound(SoundType.COPPER).noOcclusion()));
 
-    public static final DeferredBlock<WeatheringCopperPipeBlock> COPPER_PIPE = weatheringPipe("copper_pipe", WeatherState.UNAFFECTED);
+    public static final DeferredBlock<FarmBotStationBlock> FARMBOT_STATION = BLOCKS.register("farmbot_station",
+            () -> new FarmBotStationBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).noOcclusion()));
+
+    public static final DeferredBlock<WeatheringCopperPipeBlock> COPPER_PIPE =weatheringPipe("copper_pipe", WeatherState.UNAFFECTED);
     public static final DeferredBlock<WeatheringCopperPipeBlock> EXPOSED_COPPER_PIPE = weatheringPipe("exposed_copper_pipe", WeatherState.EXPOSED);
     public static final DeferredBlock<WeatheringCopperPipeBlock> WEATHERED_COPPER_PIPE = weatheringPipe("weathered_copper_pipe", WeatherState.WEATHERED);
     public static final DeferredBlock<WeatheringCopperPipeBlock> OXIDIZED_COPPER_PIPE = weatheringPipe("oxidized_copper_pipe", WeatherState.OXIDIZED);

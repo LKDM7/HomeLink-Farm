@@ -2,15 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "pattern": [
-    "CBC",
+    "CKC",
     "IPI",
-    "CRC"
+    "CBC"
   ],
   "key": {
     "C": {
       "item": "minecraft:copper_ingot"
     },
-    "B": {
+    "K": {
       "item": "minecraft:bucket"
     },
     "I": {
@@ -19,8 +19,8 @@
     "P": {
       "item": "minecraft:piston"
     },
-    "R": {
-      "item": "minecraft:redstone"
+    "B": {
+      "item": "homecore:homelink_circuit_board"
     }
   },
   "result": {
