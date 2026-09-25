@@ -18,9 +18,11 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,6 +30,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -37,12 +41,14 @@ import org.jetbrains.annotations.Nullable;
  * Copper Sprinkler: an end point of a copper network, irrigating the area around it while its
  * network is ACTIVE. Standing (placed on top of a block) it connects through its bottom and
  * sides; hanging (placed against the underside of a pipe) it connects through its top and
- * sides and sprays downwards.
+ * sides and sprays downwards. Like pipes, sprinklers can be placed underwater (waterlogged),
+ * which also keeps flowing water from washing them away.
  */
-public class CopperSprinklerBlock extends BaseEntityBlock implements IrrigationConnectable {
+public class CopperSprinklerBlock extends BaseEntityBlock implements IrrigationConnectable, SimpleWaterloggedBlock {
     public static final MapCodec<CopperSprinklerBlock> CODEC = simpleCodec(CopperSprinklerBlock::new);
     /** True when mounted under a pipe, head pointing down. */
     public static final BooleanProperty HANGING = BlockStateProperties.HANGING;
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     /** Flange, riser, hub and the two nozzle arms. */
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(4, 0, 4, 12, 2, 12),
@@ -63,7 +69,8 @@ public class CopperSprinklerBlock extends BaseEntityBlock implements IrrigationC
 
     public CopperSprinklerBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(IrrigationVisual.PROPERTY, IrrigationVisual.OFF).setValue(HANGING, false));
+        registerDefaultState(stateDefinition.any().setValue(IrrigationVisual.PROPERTY, IrrigationVisual.OFF).setValue(HANGING, false)
+                .setValue(WATERLOGGED, false));
     }
 
     @Override
@@ -73,7 +80,7 @@ public class CopperSprinklerBlock extends BaseEntityBlock implements IrrigationC
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(IrrigationVisual.PROPERTY, HANGING);
+        builder.add(IrrigationVisual.PROPERTY, HANGING, WATERLOGGED);
     }
 
     @Override
@@ -93,7 +100,20 @@ public class CopperSprinklerBlock extends BaseEntityBlock implements IrrigationC
     /** Clicking the underside of a block (typically a pipe) mounts the sprinkler hanging below it. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(HANGING, context.getClickedFace() == Direction.DOWN);
+        boolean water = context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER;
+        return defaultBlockState().setValue(HANGING, context.getClickedFace() == Direction.DOWN).setValue(WATERLOGGED, water);
+    }
+
+    @Override
+    protected FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+                                     BlockPos pos, BlockPos neighborPos) {
+        if (state.getValue(WATERLOGGED)) level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
 
     @Override

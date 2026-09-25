@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 public final class FarmButton extends Button {
     private BooleanSupplier accentSelected;
 
-    /** Opt-in gold hover and selected state, used by the machine help toggle. */
+    /** Opt-in gold hover and selected state, used by the help and irrigation overlay toggles. */
     public void accentWhen(BooleanSupplier selected) {
         accentSelected = selected;
     }

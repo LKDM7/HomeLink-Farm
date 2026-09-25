@@ -177,6 +177,23 @@ public final class IrrigationNetworkGameTests {
     }
 
     @GameTest(template = "field", timeoutTicks = 300)
+    public static void sprinklersCanBePlacedUnderwater(GameTestHelper helper) {
+        buildLine(helper, 1, true);
+        BlockPos sprinkler = sprinkler(0);
+        // Its own water flows around it: the sprinkler must stay, keep the water and keep irrigating.
+        helper.setBlock(sprinkler, helper.getBlockState(sprinkler).setValue(CopperSprinklerBlock.WATERLOGGED, true));
+        helper.startSequence()
+                .thenIdle(40)
+                .thenWaitUntil(() -> {
+                    helper.assertBlockPresent(ModBlocks.COPPER_SPRINKLER.get(), sprinkler);
+                    helper.assertTrue(helper.getLevel().getFluidState(helper.absolutePos(sprinkler)).isSource(), "Waterlogged sprinkler lost its water");
+                    assertSprinklers(helper, 1, IrrigationVisual.ACTIVE);
+                    helper.assertTrue(helper.getBlockState(sprinkler).getValue(CopperSprinklerBlock.WATERLOGGED), "Visual update dropped the water");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = "field", timeoutTicks = 300)
     public static void disabledPumpStopsItsNetwork(GameTestHelper helper) {
         buildLine(helper, 1, true);
         helper.startSequence()

@@ -1,6 +1,9 @@
 # Modifications non publiées
 
 - Portée verticale des arroseurs posés et suspendus augmentée à 12 blocs vers le bas ; aide et tests des limites mis à jour.
+- Arroseurs immergeables (waterlogged) comme les tuyaux : l'eau qui coule ne les emporte plus.
+- Nom personnalisé d'une machine affiché en doré dans l'en-tête de son écran.
+- Bouton « Voir l'irrigation » doré tant que la vue est active (moniteur et pompe) ; la touche I fonctionne aussi dans ces écrans.
 
 ## Modèles et matériaux
 

@@ -3,7 +3,6 @@ package fr.lkdm.homelink.farm.client.screen;
 import fr.lkdm.homelink.farm.blockentity.CropMonitorBlockEntity;
 import fr.lkdm.homelink.farm.blockentity.FarmControllerBlockEntity;
 import fr.lkdm.homelink.farm.client.ClientFarmData;
-import fr.lkdm.homelink.farm.client.overlay.IrrigationOverlay;
 import fr.lkdm.homelink.farm.farm.controller.ControllerLink;
 import fr.lkdm.homelink.farm.farm.crop.CropScanResult;
 import fr.lkdm.homelink.farm.farm.diagnostic.CropProblem;
@@ -57,7 +56,7 @@ public class CropMonitorScreen extends FarmDeviceScreen<CropMonitorBlockEntity> 
             commandButton(Component.translatable("gui.homelink_farm.zone.clear"), 94, bottom, 80, DeviceCommand.ZONE_CLEAR, 0);
             commandButton(Component.translatable("gui.homelink_farm.rescan"), 178, bottom, 82, DeviceCommand.RESCAN, 0);
             button(Component.translatable("gui.homelink_farm.diagnostic.open"), 10, bottom - 2 * BUTTON_ROW, 123, () -> switchView(true));
-            button(Component.translatable("gui.homelink_farm.overlay.toggle"), 137, bottom - 2 * BUTTON_ROW, 123, IrrigationOverlay::toggle);
+            overlayButton(137, bottom - 2 * BUTTON_ROW, 123);
             Component mode = device().map(monitor -> monitor.comparatorMode().label()).orElse(Component.empty());
             commandButton(Component.translatable("gui.homelink_farm.comparator", mode), 10, bottom - BUTTON_ROW, 170, DeviceCommand.CYCLE_COMPARATOR, 0);
             button(Component.translatable("gui.homelink_farm.zone.show"), 184, bottom - BUTTON_ROW, 76, this::showZone);

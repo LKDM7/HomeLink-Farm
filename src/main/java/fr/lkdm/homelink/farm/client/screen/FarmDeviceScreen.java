@@ -1,6 +1,7 @@
 package fr.lkdm.homelink.farm.client.screen;
 
 import fr.lkdm.homelink.farm.blockentity.AbstractFarmDeviceBlockEntity;
+import fr.lkdm.homelink.farm.client.overlay.IrrigationOverlay;
 import fr.lkdm.homelink.farm.farm.DeviceNames;
 import fr.lkdm.homelink.farm.menu.FarmDeviceMenu;
 import fr.lkdm.homelink.farm.network.DeviceCommand;
@@ -55,6 +56,8 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     private EditBox nameBox;
     @org.jetbrains.annotations.Nullable
     private Button networkButton;
+    /** True when the current view has an overlay button; its key then works in the screen too. */
+    private boolean overlayToggle;
     private boolean helpOpen;
     private FarmHelpView help;
     private Button helpUp, helpDown;
@@ -72,6 +75,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         boolean editingName = nameBox != null && nameBox.isFocused();
         super.init();
         networkButton = null;
+        overlayToggle = false;
         Button helpButton = button(Component.translatable("gui.homelink_farm.help.button"), imageWidth - 30, 3, 20, this::toggleHelp);
         ((FarmButton) helpButton).accentWhen(() -> helpOpen);
         helpButton.setTooltip(Tooltip.create(Component.translatable("gui.homelink_farm.help.tooltip")));
@@ -122,6 +126,14 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
 
     protected Button commandButton(Component label, int x, int y, int width, DeviceCommand command, int argument) {
         return button(label, x, y, width, () -> sendCommand(command, argument));
+    }
+
+    /** "Show irrigation" toggle, gold while the overlay is on (whether toggled here or with its key). */
+    protected Button overlayButton(int x, int y, int width) {
+        Button button = button(Component.translatable("gui.homelink_farm.overlay.toggle"), x, y, width, IrrigationOverlay::toggle);
+        ((FarmButton) button).accentWhen(IrrigationOverlay::enabled);
+        overlayToggle = true;
+        return button;
     }
 
     /**
@@ -234,7 +246,9 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         FarmTheme.statusLight(graphics, statusX - 12, 8, status.color());
         graphics.drawString(font, statusText, statusX, 8, LABEL, false);
         Component heading = device.map(AbstractFarmDeviceBlockEntity::displayName).orElse(title);
-        graphics.drawString(font, font.plainSubstrByWidth(heading.getString(), statusX - 30), 14, 8, TEXT, false);
+        boolean renamed = device.filter(named -> !named.customName().isEmpty()).isPresent();
+        graphics.drawString(font, font.plainSubstrByWidth(heading.getString(), statusX - 30), 14, 8,
+                renamed ? FarmTheme.ACCENT : TEXT, false);
         if (helpOpen) {
             graphics.drawString(font, Component.translatable("gui.homelink_farm.help.title"), 12, 30, FarmTheme.ACCENT, false);
             return;
@@ -287,6 +301,10 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
                 // Keep typed letters (e.g. the inventory key) from closing the screen.
                 return nameBox.keyPressed(keyCode, scanCode, modifiers) || nameBox.canConsumeInput();
             }
+        }
+        if (overlayToggle && IrrigationOverlay.TOGGLE_KEY.matches(keyCode, scanCode)) {
+            IrrigationOverlay.toggle();
+            return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }

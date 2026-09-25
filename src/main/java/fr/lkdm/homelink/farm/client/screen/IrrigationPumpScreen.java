@@ -23,8 +23,7 @@ public class IrrigationPumpScreen extends FarmDeviceScreen<IrrigationPumpBlockEn
         networkButton(10, buttonsTop(), 150);
         commandButton(Component.translatable("gui.homelink_farm.pump.toggle"), 164, buttonsTop(), 96, DeviceCommand.TOGGLE_ENABLED, 0);
         commandButton(Component.translatable("gui.homelink_farm.pump.redstone_cycle"), 10, bottomRow(), 150, DeviceCommand.CYCLE_REDSTONE, 0);
-        button(Component.translatable("gui.homelink_farm.overlay.toggle"), 164, bottomRow(), 96,
-                fr.lkdm.homelink.farm.client.overlay.IrrigationOverlay::toggle);
+        overlayButton(164, bottomRow(), 96);
     }
 
     @Override

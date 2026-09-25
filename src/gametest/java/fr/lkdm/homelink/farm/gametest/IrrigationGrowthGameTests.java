@@ -89,8 +89,9 @@ public final class IrrigationGrowthGameTests {
         helper.succeedWhen(() -> {
             assertSprinklers(helper, 2, IrrigationVisual.ACTIVE);
             LongOpenHashSet irrigated = irrigatedInTest(helper);
-            // Two 5 x 4 x 5 areas (100 positions each) overlapping on 3 columns: union = 7 x 4 x 5 = 140.
-            helper.assertTrue(irrigated.size() == 140, "Coverage union should be 140 positions, got " + irrigated.size());
+            // Sprinklers at y 3 reach 1 above and 12 below, clipped to the scanned layers y 0..4: two
+            // 5 x 5 x 5 areas (125 positions each) overlapping on 3 columns, union = 7 x 5 x 5 = 175.
+            helper.assertTrue(irrigated.size() == 175, "Coverage union should be 175 positions, got " + irrigated.size());
             // Force exactly one extra tick per covered position: every crop gets ONE tick, not two.
             int delivered = IrrigationGrowth.apply(helper.getLevel(), IrrigationCoverage.ofIrrigated(irrigated), 1.0);
             helper.assertTrue(delivered == crops, "Expected " + crops + " bonus ticks (one per crop), got " + delivered);

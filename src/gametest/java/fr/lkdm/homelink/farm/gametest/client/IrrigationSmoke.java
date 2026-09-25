@@ -98,6 +98,12 @@ final class IrrigationSmoke {
             screenshot("monitor_irrigation");
         });
         step("toggle overlay", () -> true, () -> ClientSmoke.press(SmokeScenario.text("gui.homelink_farm.overlay.toggle")));
+        pause(5);
+        step("overlay button screenshot", () -> IrrigationOverlay.enabled(), () -> screenshot("monitor_overlay_on"));
+        // The overlay key also works inside the screen, and the button follows it.
+        step("key I in screen", () -> true, () -> Minecraft.getInstance().screen.keyPressed(IrrigationOverlay.TOGGLE_KEY.getKey().getValue(), 0, 0));
+        step("overlay off by key", () -> !IrrigationOverlay.enabled(), () -> screenshot("monitor_overlay_off"));
+        step("key I again", () -> true, () -> Minecraft.getInstance().screen.keyPressed(IrrigationOverlay.TOGGLE_KEY.getKey().getValue(), 0, 0));
         step("close", () -> true, () -> Minecraft.getInstance().player.closeContainer());
         step("overlay data", () -> IrrigationOverlay.enabled() && IrrigationOverlay.data().sprinklers().stream()
                 .anyMatch(mark -> mark.state() == IrrigationVisual.ACTIVE), () -> check(!IrrigationOverlay.data().uncovered().isEmpty(),
