@@ -9,7 +9,8 @@ import fr.lkdm.homelink.farm.farm.bot.FarmBotSnapshot;
 import fr.lkdm.homelink.farm.farm.controller.ControllerLink;
 import fr.lkdm.homelink.farm.farm.controller.FarmComponent;
 import fr.lkdm.homelink.farm.farm.controller.FarmComponentKind;
-import fr.lkdm.homelink.farm.farm.controller.LinkedComponent;
+import fr.lkdm.homelink.farm.config.FarmServerConfig;
+import fr.lkdm.homelink.farm.farm.crop.LoadedMonitors;
 import fr.lkdm.homelink.farm.homelink.FarmBotStationDevice;
 import fr.lkdm.homelink.farm.homelink.FarmBotStationView;
 import fr.lkdm.homelink.farm.homelink.HomeCoreIntegration;
@@ -22,6 +23,7 @@ import fr.lkdm.homelink.farm.network.DeviceCommandTarget;
 import fr.lkdm.homelink.farm.registry.ModBlockEntities;
 import fr.lkdm.homelink.farm.registry.ModEntities;
 import fr.lkdm.homelink.farm.registry.ModMenus;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +56,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * FarmBot Station: dock, charger, departure and return point, output inventory and local
  * controller of one FarmBot. Linked to a Farm Controller with the Farm Connector like any
- * other component; the robot then works from one of that controller's Crop Monitors.
+ * other component (optional): the robot then works on every Crop Monitor of that farm, or on the one
+ * pinned with the MONITOR button. Without a controller it works from the nearest Crop Monitor of the
+ * same owner within link range.
  * The dock is the block in front of the station (its FACING side).
  */
 public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
@@ -89,6 +93,9 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
     @Nullable
     private BlockPos monitorPos;
     private String monitorName = "";
+    /** With a controller: work on every Crop Monitor of the farm instead of a single one. */
+    private boolean wholeFarm;
+    private int farmMonitors;
     @Nullable
     private FarmBotSnapshot snapshot;
     private int outputUsed;
@@ -210,14 +217,17 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
     }
 
     @Override
-    public Optional<CropMonitorBlockEntity> cropSource(ServerLevel level) {
-        if (monitorPos == null || monitorId == null || controllerLink == null || !level.isLoaded(monitorPos)) return Optional.empty();
-        if (!(level.getBlockEntity(monitorPos) instanceof CropMonitorBlockEntity monitor) || !monitor.componentId().equals(monitorId)) {
-            return Optional.empty();
+    public List<CropMonitorBlockEntity> cropSources(ServerLevel level) {
+        if (wholeFarm()) {
+            List<CropMonitorBlockEntity> sources = new ArrayList<>();
+            for (MonitorEntry entry : farmChoices(level).orElse(List.of())) {
+                resolve(level, entry.id(), entry.pos()).filter(this::inFarm).ifPresent(sources::add);
+            }
+            return sources;
         }
-        boolean sameFarm = monitor.controllerLink().map(link -> link.controllerId().equals(controllerLink.controllerId())).orElse(false);
-        if (!sameFarm || monitor.zone().isEmpty() || monitor.result().isEmpty()) return Optional.empty();
-        return Optional.of(monitor);
+        return resolve(level, monitorId, monitorPos)
+                .filter(monitor -> controllerLink != null ? inFarm(monitor) : usableNearby(monitor))
+                .map(List::of).orElse(List.of());
     }
 
     @Override
@@ -271,48 +281,129 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
 
     // ----- Crop Monitor choice --------------------------------------------------------------
 
+    /** A Crop Monitor the robot may work from (possibly unloaded right now). */
+    private record MonitorEntry(UUID id, BlockPos pos) {
+    }
+
     public Optional<UUID> monitorId() {
         return Optional.ofNullable(monitorId);
     }
 
-    /** Client + server: display name of the chosen Crop Monitor ("" when none). */
+    /** Client + server: display name of the chosen Crop Monitor ("" when none or in whole-farm mode). */
     public String monitorName() {
         return monitorName;
     }
 
-    /** Crop Monitors linked to the same Farm Controller, nearest first (requires the controller loaded). */
-    private List<LinkedComponent> monitorChoices(ServerLevel level) {
-        if (controllerLink == null || !level.isLoaded(controllerLink.controllerPos())) return List.of();
-        if (!(level.getBlockEntity(controllerLink.controllerPos()) instanceof FarmControllerBlockEntity controller)
-                || !controller.deviceId().equals(controllerLink.controllerId())) {
-            return List.of();
-        }
-        return controller.linkedComponents().all().stream()
-                .filter(entry -> entry.kind() == FarmComponentKind.CROP_MONITOR)
-                .sorted(Comparator.comparingDouble(entry -> entry.pos().distSqr(getBlockPos())))
-                .toList();
+    /** Client + server: linked to a Farm Controller and working on every Crop Monitor of that farm. */
+    public boolean wholeFarm() {
+        return controllerLink != null && wholeFarm;
     }
 
-    /** Selects the next Crop Monitor of the farm. */
+    /** Client + server: number of Crop Monitors of the farm (whole-farm mode). */
+    public int farmMonitors() {
+        return farmMonitors;
+    }
+
+    /** Crop Monitors linked to this station's Farm Controller, nearest first; empty when the controller is not loaded. */
+    private Optional<List<MonitorEntry>> farmChoices(ServerLevel level) {
+        if (controllerLink == null || !level.isLoaded(controllerLink.controllerPos())) return Optional.empty();
+        if (!(level.getBlockEntity(controllerLink.controllerPos()) instanceof FarmControllerBlockEntity controller)
+                || !controller.deviceId().equals(controllerLink.controllerId())) {
+            return Optional.empty();
+        }
+        return Optional.of(controller.linkedComponents().all().stream()
+                .filter(entry -> entry.kind() == FarmComponentKind.CROP_MONITOR)
+                .sorted(Comparator.comparingDouble(entry -> entry.pos().distSqr(getBlockPos())))
+                .map(entry -> new MonitorEntry(entry.id(), entry.pos()))
+                .toList());
+    }
+
+    /**
+     * Without a Farm Controller: loaded Crop Monitors within link range that belong to the same
+     * owner, nearest first. Reads the index of loaded monitors, never the world.
+     */
+    private List<MonitorEntry> nearbyChoices(ServerLevel level) {
+        List<MonitorEntry> choices = new ArrayList<>();
+        for (BlockPos pos : LoadedMonitors.in(level)) {
+            if (level.getBlockEntity(pos) instanceof CropMonitorBlockEntity monitor && usableNearby(monitor)) {
+                choices.add(new MonitorEntry(monitor.componentId(), pos));
+            }
+        }
+        choices.sort(Comparator.comparingDouble(entry -> entry.pos().distSqr(getBlockPos())));
+        return choices;
+    }
+
+    private boolean usableNearby(CropMonitorBlockEntity monitor) {
+        int range = FarmServerConfig.MAX_LINK_DISTANCE.get();
+        boolean sameOwner = owner().isEmpty() || monitor.owner().isEmpty() || owner().equals(monitor.owner());
+        return sameOwner && monitor.getBlockPos().distSqr(getBlockPos()) <= (double) range * range;
+    }
+
+    private boolean inFarm(CropMonitorBlockEntity monitor) {
+        return controllerLink != null
+                && monitor.controllerLink().map(link -> link.controllerId().equals(controllerLink.controllerId())).orElse(false);
+    }
+
+    /** The loaded, scanned Crop Monitor with this identity, if any. */
+    private Optional<CropMonitorBlockEntity> resolve(ServerLevel level, @Nullable UUID id, @Nullable BlockPos pos) {
+        if (id == null || pos == null || !level.isLoaded(pos)) return Optional.empty();
+        if (!(level.getBlockEntity(pos) instanceof CropMonitorBlockEntity monitor) || !monitor.componentId().equals(id)) return Optional.empty();
+        if (monitor.zone().isEmpty() || monitor.result().isEmpty()) return Optional.empty();
+        return Optional.of(monitor);
+    }
+
+    /** The chosen monitor's chunk is loaded but it is gone, or no longer allowed. */
+    private boolean choiceInvalid(ServerLevel level) {
+        if (monitorId == null || monitorPos == null) return true;
+        if (!level.isLoaded(monitorPos)) return false;
+        if (!(level.getBlockEntity(monitorPos) instanceof CropMonitorBlockEntity monitor) || !monitor.componentId().equals(monitorId)) return true;
+        return controllerLink != null ? !inFarm(monitor) : !usableNearby(monitor);
+    }
+
+    /**
+     * MONITOR button. With a Farm Controller: whole farm, then each of its monitors, then the whole
+     * farm again. Without: each nearby monitor in turn.
+     */
     public void cycleMonitor(ServerLevel level, @Nullable ServerPlayer player) {
-        List<LinkedComponent> choices = monitorChoices(level);
-        if (choices.isEmpty()) {
+        if (controllerLink != null) {
+            List<MonitorEntry> farm = farmChoices(level).orElse(List.of());
+            int index = wholeFarm ? -1 : indexOf(farm, monitorId);
+            if (farm.isEmpty() || (!wholeFarm && (index < 0 || index + 1 >= farm.size()))) selectWholeFarm(level);
+            else selectMonitor(level, farm.get(index + 1));
+            return;
+        }
+        List<MonitorEntry> nearby = nearbyChoices(level);
+        if (nearby.isEmpty()) {
             if (player != null) {
-                player.displayClientMessage(Component.translatable("message.homelink_farm.farmbot.no_monitor").withStyle(ChatFormatting.YELLOW), true);
+                player.displayClientMessage(Component.translatable("message.homelink_farm.farmbot.no_monitor",
+                        FarmServerConfig.MAX_LINK_DISTANCE.get()).withStyle(ChatFormatting.YELLOW), true);
             }
             return;
         }
-        int index = -1;
-        for (int i = 0; i < choices.size(); i++) {
-            if (choices.get(i).id().equals(monitorId)) index = i;
-        }
-        selectMonitor(level, choices.get((index + 1) % choices.size()));
+        selectMonitor(level, nearby.get((indexOf(nearby, monitorId) + 1) % nearby.size()));
     }
 
-    private void selectMonitor(ServerLevel level, @Nullable LinkedComponent entry) {
+    private static int indexOf(List<MonitorEntry> entries, @Nullable UUID id) {
+        for (int i = 0; i < entries.size(); i++) {
+            if (entries.get(i).id().equals(id)) return i;
+        }
+        return -1;
+    }
+
+    private void selectMonitor(ServerLevel level, @Nullable MonitorEntry entry) {
+        wholeFarm = false;
         monitorId = entry == null ? null : entry.id();
         monitorPos = entry == null ? null : entry.pos();
         refreshMonitorName(level);
+        setChangedAndSync();
+    }
+
+    private void selectWholeFarm(ServerLevel level) {
+        wholeFarm = true;
+        monitorId = null;
+        monitorPos = null;
+        monitorName = "";
+        farmMonitors = farmChoices(level).map(List::size).orElse(farmMonitors);
         setChangedAndSync();
     }
 
@@ -336,10 +427,21 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
     public void serverTick(ServerLevel level) {
         if (Math.floorMod(level.getGameTime() + getBlockPos().hashCode(), CHECK_INTERVAL) != 0) return;
         if (robot != null && robotGone(level)) releaseRobot(robot);
-        if (monitorId == null && controllerLink != null) {
-            // Zero configuration: work from the farm's nearest Crop Monitor until the player picks another.
-            List<LinkedComponent> choices = monitorChoices(level);
-            if (!choices.isEmpty()) selectMonitor(level, choices.getFirst());
+        // Zero configuration: the whole farm with a controller, otherwise the nearest usable monitor.
+        if (controllerLink != null) {
+            if (wholeFarm) {
+                int count = farmChoices(level).map(List::size).orElse(farmMonitors);
+                if (count != farmMonitors) {
+                    farmMonitors = count;
+                    setChangedAndSync();
+                }
+            } else if (choiceInvalid(level)) {
+                selectWholeFarm(level);
+            }
+        } else if (choiceInvalid(level)) {
+            List<MonitorEntry> nearby = nearbyChoices(level);
+            if (!nearby.isEmpty()) selectMonitor(level, nearby.getFirst());
+            else if (monitorId != null) selectMonitor(level, null);
         }
         refreshMonitorName(level);
     }
@@ -445,10 +547,8 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
     public void setControllerLink(ControllerLink link) {
         boolean otherFarm = controllerLink == null || !controllerLink.controllerId().equals(link.controllerId());
         controllerLink = link;
-        if (otherFarm && level instanceof ServerLevel serverLevel) {
-            List<LinkedComponent> choices = monitorChoices(serverLevel);
-            selectMonitor(serverLevel, choices.isEmpty() ? null : choices.getFirst());
-        }
+        // A new farm: work on all of its Crop Monitors until the player pins one.
+        if (otherFarm && level instanceof ServerLevel serverLevel) selectWholeFarm(serverLevel);
         setChangedAndSync();
     }
 
@@ -456,6 +556,8 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
     public void clearControllerLink() {
         if (controllerLink == null) return;
         controllerLink = null;
+        wholeFarm = false;
+        farmMonitors = 0;
         monitorId = null;
         monitorPos = null;
         monitorName = "";
@@ -498,6 +600,8 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
             tag.put("MonitorPos", NbtUtils.writeBlockPos(monitorPos));
         }
         tag.putString("MonitorName", monitorName);
+        tag.putBoolean("WholeFarm", wholeFarm);
+        tag.putInt("FarmMonitors", farmMonitors);
         if (snapshot != null && robot != null) tag.put("Snapshot", snapshot.save());
         tag.put("Output", output.serializeNBT(registries));
     }
@@ -512,6 +616,8 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
         monitorId = tag.hasUUID("MonitorId") ? tag.getUUID("MonitorId") : null;
         monitorPos = monitorId == null ? null : NbtUtils.readBlockPos(tag, "MonitorPos").orElse(null);
         monitorName = tag.getString("MonitorName");
+        wholeFarm = tag.getBoolean("WholeFarm");
+        farmMonitors = tag.getInt("FarmMonitors");
         snapshot = robot != null && tag.contains("Snapshot") ? FarmBotSnapshot.load(tag.getCompound("Snapshot")) : null;
         if (tag.contains("Output")) {
             CompoundTag items = tag.getCompound("Output");

@@ -23,6 +23,8 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
     private boolean shownWorking;
     private boolean shownRobot;
     private String shownMonitor = "";
+    /** Prefix of {@link #shownMonitor} in whole-farm mode (cannot appear in a device name). */
+    private static final String WHOLE_FARM = "\u0000farm:";
 
     public FarmBotStationScreen(FarmDeviceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, FarmBotStationBlockEntity.class, 226);
@@ -59,7 +61,7 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
         }
         shownWorking = device().map(FarmBotStationBlockEntity::working).orElse(true);
         shownRobot = device().map(FarmBotStationBlockEntity::hasRobot).orElse(false);
-        shownMonitor = device().map(FarmBotStationBlockEntity::monitorName).orElse("");
+        shownMonitor = device().map(FarmBotStationScreen::monitorKey).orElse("");
         commandButton(Component.translatable(shownWorking ? "gui.homelink_farm.farmbot.pause" : "gui.homelink_farm.farmbot.start"),
                 10, bottom - 2 * BUTTON_ROW, 123, shownWorking ? DeviceCommand.FARMBOT_PAUSE : DeviceCommand.FARMBOT_START, 0);
         Button home = commandButton(Component.translatable("gui.homelink_farm.farmbot.return"), 137, bottom - 2 * BUTTON_ROW, 123,
@@ -71,7 +73,15 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
         networkButton(10, bottom, 250);
     }
 
+    /** What the MONITOR button and line show: the whole farm (with its monitor count), one monitor, or none. */
+    private static String monitorKey(FarmBotStationBlockEntity station) {
+        return station.wholeFarm() ? WHOLE_FARM + station.farmMonitors() : station.monitorName();
+    }
+
     private Component monitorLabel() {
+        if (shownMonitor.startsWith(WHOLE_FARM)) {
+            return Component.translatable("gui.homelink_farm.farmbot.whole_farm", shownMonitor.substring(WHOLE_FARM.length()));
+        }
         return shownMonitor.isEmpty() ? Component.translatable("gui.homelink_farm.farmbot.no_monitor") : Component.literal(shownMonitor);
     }
 
@@ -86,7 +96,7 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
         if (isHelpOpen() || outputView) return;
         boolean working = device().map(FarmBotStationBlockEntity::working).orElse(true);
         boolean robot = device().map(FarmBotStationBlockEntity::hasRobot).orElse(false);
-        String monitor = device().map(FarmBotStationBlockEntity::monitorName).orElse("");
+        String monitor = device().map(FarmBotStationScreen::monitorKey).orElse("");
         if (working != shownWorking || robot != shownRobot || !monitor.equals(shownMonitor)) rebuildWidgets();
     }
 

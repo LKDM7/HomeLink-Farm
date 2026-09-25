@@ -31,9 +31,13 @@ public final class ModBlocks {
             () -> new IrrigationPumpBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_ORANGE).strength(3.0F, 6.0F).sound(SoundType.COPPER).noOcclusion()));
 
+    /** Sprinklers light their field like a torch (level 14), whatever their state. */
+    public static final int SPRINKLER_LIGHT = 14;
+
     public static final DeferredBlock<CopperSprinklerBlock> COPPER_SPRINKLER = BLOCKS.register("copper_sprinkler",
             () -> new CopperSprinklerBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_ORANGE).strength(2.0F, 6.0F).sound(SoundType.COPPER).noOcclusion()));
+                    .mapColor(MapColor.COLOR_ORANGE).strength(2.0F, 6.0F).sound(SoundType.COPPER).noOcclusion()
+                    .lightLevel(state -> SPRINKLER_LIGHT)));
 
     public static final DeferredBlock<FarmBotStationBlock> FARMBOT_STATION = BLOCKS.register("farmbot_station",
             () -> new FarmBotStationBlock(BlockBehaviour.Properties.of()

@@ -1,23 +1,12 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
-  "pattern": [
-    "CGC",
-    " P "
-  ],
+  "pattern": [ "CGC", " D ", " P " ],
   "key": {
-    "C": {
-      "item": "minecraft:copper_ingot"
-    },
-    "G": {
-      "item": "minecraft:copper_grate"
-    },
-    "P": {
-      "item": "homelink_farm:copper_pipe"
-    }
+    "C": { "item": "minecraft:copper_ingot" },
+    "G": { "item": "minecraft:copper_grate" },
+    "D": { "tag": "c:dusts/glowstone" },
+    "P": { "item": "homelink_farm:copper_pipe" }
   },
-  "result": {
-    "id": "homelink_farm:copper_sprinkler",
-    "count": 1
-  }
+  "result": { "id": "homelink_farm:copper_sprinkler", "count": 1 }
 }

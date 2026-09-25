@@ -18,6 +18,17 @@ public final class FarmBotTargets {
     private FarmBotTargets() {
     }
 
+    /** Nearest harvestable crop over several monitors (a whole farm). */
+    @Nullable
+    public static BlockPos nearest(ServerLevel level, java.util.List<CropMonitorBlockEntity> monitors, Vec3 from, Predicate<BlockPos> excluded) {
+        BlockPos best = null;
+        for (CropMonitorBlockEntity monitor : monitors) {
+            BlockPos candidate = nearest(level, monitor, from, excluded);
+            if (candidate != null && (best == null || candidate.distToCenterSqr(from) < best.distToCenterSqr(from))) best = candidate;
+        }
+        return best;
+    }
+
     @Nullable
     public static BlockPos nearest(ServerLevel level, CropMonitorBlockEntity monitor, Vec3 from, Predicate<BlockPos> excluded) {
         CropScanResult result = monitor.result().orElse(null);

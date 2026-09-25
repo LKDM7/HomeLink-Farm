@@ -20,6 +20,7 @@ public final class FarmServerConfig {
     public static final ModConfigSpec.IntValue MAX_NETWORK_NODES;
     public static final ModConfigSpec.IntValue SPRINKLER_RANGE;
     public static final ModConfigSpec.DoubleValue IRRIGATION_GROWTH_BONUS;
+    public static final ModConfigSpec.IntValue PIPE_OXIDATION_DAYS;
 
     public static final ModConfigSpec.IntValue FARMBOT_BATTERY_CAPACITY;
     public static final ModConfigSpec.IntValue FARMBOT_LOW_BATTERY_THRESHOLD;
@@ -79,6 +80,10 @@ public final class FarmServerConfig {
                 .comment("Growth speed bonus of irrigated crops (0.20 = +20%). Never stacks between sprinklers.",
                         "Implemented as extra vanilla random ticks; the randomTickSpeed game rule is never modified.")
                 .defineInRange("irrigationGrowthBonus", 0.20, 0.0, 1.0);
+        PIPE_OXIDATION_DAYS = builder
+                .comment("In-game days (in loaded chunks, at the default randomTickSpeed) for an unwaxed copper pipe",
+                        "to go from new to fully oxidized. Oxidation is cosmetic: every stage carries water.")
+                .defineInRange("pipeOxidationDays", 100, 1, 10000);
         builder.pop();
 
         builder.push("farmbot");

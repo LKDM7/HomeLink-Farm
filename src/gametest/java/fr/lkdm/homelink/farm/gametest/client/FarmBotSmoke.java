@@ -133,6 +133,23 @@ final class FarmBotSmoke {
         }));
         pause(30);
         step("station front screenshot", () -> true, () -> screenshot("farmbot_station_model"));
+        // The FarmBot item uses the robot's 3D model: first person, third person and inventory.
+        step("hold the robot", () -> true, () -> Minecraft.getInstance().player.getInventory().selected = 0);
+        pause(10);
+        step("item in hand screenshot", () -> true, () -> screenshot("farmbot_item_hand"));
+        step("third person", () -> true, () -> Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT));
+        pause(10);
+        step("item third person screenshot", () -> true, () -> {
+            screenshot("farmbot_item_third_person");
+            Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+        });
+        step("inventory", () -> true, () -> Minecraft.getInstance().setScreen(
+                new net.minecraft.client.gui.screens.inventory.InventoryScreen(Minecraft.getInstance().player)));
+        pause(10);
+        step("item inventory screenshot", () -> true, () -> {
+            screenshot("farmbot_item_inventory");
+            Minecraft.getInstance().setScreen(null);
+        });
         openStation(EMPTY_STATION);
         step("empty station screenshot", () -> true, () -> {
             check(!station(EMPTY_STATION).hasRobot(), "Empty station claims a robot");

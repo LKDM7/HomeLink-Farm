@@ -6,7 +6,7 @@ Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer
 
 ```text
 Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +20 % de croissance
-Crop Monitor → FarmBot Station → FarmBot : roule → récolte → replante → revient → décharge → se recharge
+Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replante → revient → décharge → se recharge   (Farm Controller facultatif)
 ```
 
 ## Installation
@@ -28,9 +28,9 @@ Compilation depuis les sources (JDK 21) : publier d'abord HomeCore dans le Maven
 | **Crop Monitor** | Surveille une zone : cultures, prêtes / en croissance, maturité, irrigation, problèmes, LOCATE, sortie comparateur. |
 | **Farm Connector** | Outil de configuration (non consommé). |
 | **Irrigation Pump** | Cœur hydraulique : exige une vraie source d'eau adjacente (ne crée jamais d'eau), ou se pose **sous l'eau** dans une source (bloc immergé), appareil HomeCore. |
-| **Copper Irrigation Pipe** | Tuyau connecté automatiquement sur ses 6 faces ; s'oxyde comme le cuivre vanilla (4 stades + 4 variantes cirées). |
-| **Copper Sprinkler** | Irrigue la zone autour de lui tant que son réseau est ACTIVE. Se pose sur un tuyau, ou **dessous** (clic sur la face inférieure) pour être suspendu, tête vers le bas. Peut être immergé (waterlogged). |
-| **FarmBot Station** | Dock, chargeur, point de départ et de retour d'un FarmBot, sortie de 9 emplacements, commandes START / PAUSE / RETURN HOME, appareil HomeCore. Le robot se gare sur le bloc **devant** la station (face FACING). |
+| **Copper Irrigation Pipe** | Tuyau connecté automatiquement sur ses 6 faces. S'oxyde tout seul, au même rythme quel que soit le cuivre voisin : neuf → exposé → altéré → oxydé en **environ 100 jours de jeu** (réglable, chunks chargés). 4 stades + 4 variantes cirées ; la hache gratte, le rayon de miel cire. Purement esthétique : tous les stades transportent l'eau. |
+| **Copper Sprinkler** | Irrigue la zone autour de lui tant que son réseau est ACTIVE. Se pose sur un tuyau, ou **dessous** (clic sur la face inférieure) pour être suspendu, tête vers le bas. Peut être immergé (waterlogged). Éclaire comme une torche (niveau 14). |
+| **FarmBot Station** | Dock, chargeur, point de départ et de retour d'un FarmBot, sortie de 9 emplacements, commandes START / PAUSE / RETURN HOME, appareil HomeCore. Le robot se gare sur le bloc **devant** la station (face FACING). Fonctionne seule avec le Crop Monitor le plus proche, ou sur toute une ferme via un Farm Controller. |
 | **FarmBot** | Robot agricole autonome (entité, environ 0,8 bloc de large) : 9 emplacements, batterie interne ; récolte et replante les cultures mûres signalées par le Crop Monitor de sa station. |
 
 Les appareils connectés (Controller relié à au moins un composant ou à un réseau HomeLink, Monitor et Pump reliés à un Controller ou à un réseau HomeLink) font clignoter leurs voyants lumineux, visibles aussi la nuit.
@@ -102,7 +102,7 @@ Non implémentée, volontairement. La pluie hydrate la terre mais n'accélère p
 ### Installation
 
 1. Poser une **FarmBot Station** : sa face avant regarde le joueur, le robot se garera juste devant.
-2. La relier au **Farm Controller** avec le Farm Connector, comme un moniteur ou une pompe. Elle choisit d'elle-même le Crop Monitor de la ferme le plus proche ; le bouton *Moniteur* passe aux suivants.
+2. Choisir les cultures. **Sans Farm Controller**, la station travaille avec le Crop Monitor le plus proche qui appartient au même joueur, dans la portée de liaison (64 blocs par défaut) ; le bouton *Moniteur* passe aux autres moniteurs proches. **Avec un Farm Controller** (facultatif, relié au Farm Connector comme un moniteur ou une pompe), le robot travaille sur **toute la ferme**, c'est-à-dire tous les moniteurs du contrôleur ; *Moniteur* permet d'en épingler un seul, puis de revenir à toute la ferme.
 3. Clic droit sur la station avec un **FarmBot** : le serveur vérifie les droits, que la station est libre et que l'emplacement devant elle est dégagé, puis le robot apparaît à quai. Une station a un seul robot ; un robot n'appartient qu'à une station.
 
 ### Cycle de travail
@@ -189,6 +189,7 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 | `irrigation.maxNetworkNodes` | 1024 | Taille maximale d'un réseau |
 | `irrigation.sprinklerRange` | 2 | Portée horizontale (2 = 5 × 5) |
 | `irrigation.irrigationGrowthBonus` | **0.20** | Bonus de croissance (+20 %) |
+| `irrigation.pipeOxidationDays` | 100 | Jours de jeu pour qu'un tuyau non ciré soit totalement oxydé |
 | `farmbot.farmbotBatteryCapacity` | 1000 | Énergie d'une batterie pleine (mécanique interne, pas des FE) |
 | `farmbot.farmbotLowBatteryThreshold` | **20** | Pourcentage de retour à la station |
 | `farmbot.farmbotMovementConsumption` | 1.0 | Énergie par bloc parcouru |

@@ -4,7 +4,10 @@ import fr.lkdm.homelink.farm.HomeLinkFarm;
 import fr.lkdm.homelink.farm.client.overlay.IrrigationOverlay;
 import fr.lkdm.homelink.farm.client.rendering.LocateMarkers;
 import fr.lkdm.homelink.farm.client.rendering.ZonePreview;
+import fr.lkdm.homelink.farm.client.rendering.FarmBotItemRenderer;
 import fr.lkdm.homelink.farm.client.rendering.FarmBotModel;
+import fr.lkdm.homelink.farm.registry.ModItems;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import fr.lkdm.homelink.farm.client.rendering.FarmBotRenderer;
 import fr.lkdm.homelink.farm.client.screen.CropMonitorScreen;
 import fr.lkdm.homelink.farm.client.screen.FarmBotStationScreen;
@@ -33,6 +36,8 @@ public final class HomeLinkFarmClient {
         modBus.addListener(IrrigationOverlay::registerKey);
         modBus.addListener(HomeLinkFarmClient::registerRenderers);
         modBus.addListener(HomeLinkFarmClient::registerLayers);
+        modBus.addListener((RegisterClientExtensionsEvent event) ->
+                event.registerItem(FarmBotItemRenderer.extensions(), ModItems.FARMBOT.get()));
         NeoForge.EVENT_BUS.addListener(LocateMarkers::onClientTick);
         NeoForge.EVENT_BUS.addListener(LocateMarkers::onRenderLevel);
         NeoForge.EVENT_BUS.addListener(IrrigationOverlay::onClientTick);

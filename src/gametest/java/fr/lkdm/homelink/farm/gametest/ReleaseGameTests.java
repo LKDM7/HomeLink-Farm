@@ -51,6 +51,11 @@ public final class ReleaseGameTests {
             helper.assertTrue(recipe.value().getResultItem(helper.getLevel().registryAccess()).is(BuiltInRegistries.ITEM.get(HomeLinkFarm.id(name))),
                     name + " makes something else");
         });
+        // The sprinkler lights like a torch: its recipe takes glowstone dust.
+        var sprinkler = recipes.byKey(HomeLinkFarm.id("copper_sprinkler")).orElse(null);
+        helper.assertTrue(sprinkler != null && sprinkler.value().getIngredients().stream()
+                .anyMatch(ingredient -> ingredient.test(new ItemStack(net.minecraft.world.item.Items.GLOWSTONE_DUST))),
+                "Sprinkler recipe without glowstone dust");
         helper.succeed();
     }
 

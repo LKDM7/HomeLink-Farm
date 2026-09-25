@@ -1,7 +1,7 @@
 package fr.lkdm.homelink.farm.farm.bot;
 
 import fr.lkdm.homelink.farm.blockentity.CropMonitorBlockEntity;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,8 +33,8 @@ public interface FarmBotHome {
     /** Returns true once when RETURN HOME was requested since the last call. */
     boolean consumeReturnRequest();
 
-    /** The Crop Monitor whose scan results the robot works from, if chosen and loaded. */
-    Optional<CropMonitorBlockEntity> cropSource(ServerLevel level);
+    /** The loaded, scanned Crop Monitors whose results the robot works from (one, or a whole farm). */
+    List<CropMonitorBlockEntity> cropSources(ServerLevel level);
 
     /**
      * Stores harvested items.

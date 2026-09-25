@@ -134,9 +134,9 @@ public final class FarmBotBrain {
         }
         if (bot.batteryPercent() >= DEPART_BATTERY && now >= nextSearch) {
             nextSearch = now + FarmServerConfig.FARMBOT_SEARCH_COOLDOWN.get();
-            Optional<CropMonitorBlockEntity> monitor = station.cropSource(level);
-            monitorMissing = monitor.isEmpty();
-            BlockPos next = monitor.map(source -> pickTarget(level, source, now)).orElse(null);
+            List<CropMonitorBlockEntity> sources = station.cropSources(level);
+            monitorMissing = sources.isEmpty();
+            BlockPos next = pickTarget(level, sources, now);
             if (next != null) {
                 bot.setDocked(false);
                 startTarget(level, next, now);
@@ -201,13 +201,13 @@ public final class FarmBotBrain {
             return;
         }
         nextSearch = now + FarmServerConfig.FARMBOT_SEARCH_COOLDOWN.get();
-        Optional<CropMonitorBlockEntity> monitor = station.cropSource(level);
-        BlockPos next = monitor.map(source -> pickTarget(level, source, now)).orElse(null);
+        List<CropMonitorBlockEntity> sources = station.cropSources(level);
+        BlockPos next = pickTarget(level, sources, now);
         if (next != null) {
             startTarget(level, next, now);
         } else {
             // Nothing (left) to harvest, or no monitor to work from: go home.
-            monitorMissing = monitor.isEmpty();
+            monitorMissing = sources.isEmpty();
             goHome(level, FarmBotState.RETURNING);
             if (monitorMissing) set(FarmBotState.RETURNING, FarmBotFault.NO_MONITOR);
         }
@@ -361,9 +361,9 @@ public final class FarmBotBrain {
     // ----- Targets and movement -------------------------------------------------------------
 
     @Nullable
-    private BlockPos pickTarget(ServerLevel level, CropMonitorBlockEntity monitor, long now) {
+    private BlockPos pickTarget(ServerLevel level, List<CropMonitorBlockEntity> sources, long now) {
         unreachable.values().removeIf(until -> until <= now);
-        return FarmBotTargets.nearest(level, monitor, bot.position(),
+        return FarmBotTargets.nearest(level, sources, bot.position(),
                 pos -> unreachable.containsKey(pos) || FarmBotClaims.claimedByOther(level, pos, bot.getUUID()));
     }
 

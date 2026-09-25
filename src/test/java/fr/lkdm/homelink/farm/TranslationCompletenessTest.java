@@ -85,7 +85,7 @@ class TranslationCompletenessTest {
         }
         for (String value : List.of("maxLinkDistance", "maxComponentsPerController", "maxCropMonitorVolume", "maxZoneDistance",
                 "cropScanInterval", "cropScanBudgetPerTick", "globalScanBudgetPerTick", "locateDuration", "maxSprinklersPerPump",
-                "maxNetworkNodes", "sprinklerRange", "irrigationGrowthBonus", "farmbotBatteryCapacity", "farmbotLowBatteryThreshold",
+                "maxNetworkNodes", "sprinklerRange", "irrigationGrowthBonus", "pipeOxidationDays", "farmbotBatteryCapacity", "farmbotLowBatteryThreshold",
                 "farmbotMovementConsumption", "farmbotHarvestConsumption", "farmbotIdleConsumption", "farmbotRechargeTime",
                 "farmbotTargetRetryLimit", "farmbotSearchCooldown", "controller", "cropMonitor", "irrigation", "farmbot")) {
             expected.add("homelink_farm.configuration." + value);

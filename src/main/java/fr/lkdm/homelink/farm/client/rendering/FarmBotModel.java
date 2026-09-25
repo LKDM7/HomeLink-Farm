@@ -120,6 +120,17 @@ public class FarmBotModel extends EntityModel<FarmBotEntity> {
         };
     }
 
+    /** Rest pose for the item: wheels still, lights on. */
+    public void setupItem() {
+        for (ModelPart wheel : wheels) wheel.xRot = 0;
+        for (ModelPart caster : casters) caster.xRot = 0;
+        reel.xRot = 0;
+        lidar.yRot = 0;
+        body.y = 24;
+        powered = true;
+        statusColor = 0xFF6FD3E0;
+    }
+
     private static int pulse(int red, int green, int blue, float ageInTicks) {
         float level = 0.65F + 0.35F * Mth.sin(ageInTicks * 0.15F);
         return 0xFF000000 | Math.round(red * level) << 16 | Math.round(green * level) << 8 | Math.round(blue * level);

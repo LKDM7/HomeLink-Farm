@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.DataMapHooks;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -191,6 +192,55 @@ public final class IrrigationNetworkGameTests {
                     helper.assertTrue(helper.getBlockState(sprinkler).getValue(CopperSprinklerBlock.WATERLOGGED), "Visual update dropped the water");
                 })
                 .thenSucceed();
+    }
+
+    /**
+     * Pipes oxidize on their own, whatever copper surrounds them: a line of new pipes receives
+     * random ticks until fully oxidized, and the average count matches pipeOxidationDays (100 days
+     * at randomTickSpeed 3: about 1758 random ticks), within 20%.
+     */
+    @GameTest(template = "field", timeoutTicks = 100)
+    public static void pipesOxidizeAtTheConfiguredPace(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int pipes = 12;
+        for (int x = 1; x <= pipes; x++) helper.setBlock(new BlockPos(x, 2, 3), ModBlocks.COPPER_PIPE.get());
+        var random = net.minecraft.util.RandomSource.create(42);
+        long total = 0;
+        for (int x = 1; x <= pipes; x++) {
+            BlockPos pos = helper.absolutePos(new BlockPos(x, 2, 3));
+            int ticks = 0;
+            while (level.getBlockState(pos).isRandomlyTicking() && ticks < 20000) {
+                level.getBlockState(pos).randomTick(level, pos, random);
+                ticks++;
+            }
+            helper.assertBlockPresent(ModBlocks.OXIDIZED_COPPER_PIPE.get(), new BlockPos(x, 2, 3));
+            total += ticks;
+        }
+        double average = total / (double) pipes;
+        int speed = level.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_RANDOMTICKING);
+        double expected = fr.lkdm.homelink.farm.block.pipe.WeatheringCopperPipeBlock.STAGES
+                * fr.lkdm.homelink.farm.block.pipe.WeatheringCopperPipeBlock.STEPS
+                / fr.lkdm.homelink.farm.block.pipe.WeatheringCopperPipeBlock.stepChance(
+                        fr.lkdm.homelink.farm.config.FarmServerConfig.PIPE_OXIDATION_DAYS.get(), Math.max(1, speed));
+        fr.lkdm.homelink.farm.HomeLinkFarm.LOGGER.info("HOMELINK_FARM_PIPE_OXIDATION average_random_ticks={} expected={} days={}",
+                average, expected, average / expected * fr.lkdm.homelink.farm.config.FarmServerConfig.PIPE_OXIDATION_DAYS.get());
+        helper.assertTrue(Math.abs(average - expected) < expected * 0.2, "Average " + average + " random ticks, expected " + expected);
+        helper.succeed();
+    }
+
+    /** Sprinklers give off torch light (14) in every state, and it reaches the crops around them. */
+    @GameTest(template = "field", timeoutTicks = 100)
+    public static void sprinklersLightLikeATorch(GameTestHelper helper) {
+        for (BlockState state : ModBlocks.COPPER_SPRINKLER.get().getStateDefinition().getPossibleStates()) {
+            helper.assertTrue(state.getLightEmission() == Blocks.TORCH.defaultBlockState().getLightEmission(),
+                    "Sprinkler state " + state + " emits " + state.getLightEmission());
+        }
+        BlockPos sprinkler = new BlockPos(8, 2, 8);
+        helper.setBlock(sprinkler, ModBlocks.COPPER_SPRINKLER.get());
+        helper.succeedWhen(() -> {
+            int light = helper.getLevel().getBrightness(net.minecraft.world.level.LightLayer.BLOCK, helper.absolutePos(sprinkler.east(2)));
+            helper.assertTrue(light == 12, "Block light two blocks away: " + light);
+        });
     }
 
     @GameTest(template = "field", timeoutTicks = 300)

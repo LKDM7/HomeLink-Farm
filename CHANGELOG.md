@@ -1,5 +1,18 @@
 # Modifications non publiées
 
+## Tuyaux et objet FarmBot
+
+- Les arroseurs éclairent comme une torche (niveau de lumière 14), quel que soit leur état : les cultures voisines ont assez de lumière pour pousser la nuit.
+- La recette de l'arroseur demande une poudre de glowstone (sous la grille en cuivre).
+- Les tuyaux non cirés s'oxydent désormais tout seuls à rythme régulier : environ **100 jours de jeu** de neuf à totalement oxydé (`irrigation.pipeOxidationDays`). L'oxydation vanilla s'arrêtait presque dans une ligne de tuyaux, car elle ralentit fortement près d'autre cuivre.
+- L'objet FarmBot affiche le vrai modèle 3D du robot, en main (première et troisième personne), dans l'inventaire, au sol et dans un cadre.
+
+## Farm Controller facultatif pour le FarmBot
+
+- Sans Farm Controller, une FarmBot Station travaille avec le Crop Monitor le plus proche appartenant au même joueur, dans la portée de liaison ; *Moniteur* passe aux autres moniteurs proches.
+- Reliée à un Farm Controller, elle travaille sur **toute la ferme** (tous les Crop Monitors du contrôleur) ; *Moniteur* permet d'en épingler un seul. Le robot choisit la culture mûre la plus proche parmi tous ses moniteurs.
+- Le moniteur d'un autre joueur n'est jamais utilisé.
+
 ## HomeCore 1.6.1 et recettes
 
 - HomeLink Farm requiert désormais **HomeCore 1.6.1** (au lieu de 1.3.0).

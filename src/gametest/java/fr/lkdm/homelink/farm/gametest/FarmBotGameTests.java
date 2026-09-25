@@ -78,7 +78,7 @@ public final class FarmBotGameTests {
         monitor.setZone(new CropZone(helper.absolutePos(new BlockPos(2, 1, 2)), helper.absolutePos(new BlockPos(14, 1, 12))));
         FarmLinkService.link(helper.getLevel(), controller, monitor, 32);
         FarmLinkService.link(helper.getLevel(), controller, station, 32);
-        helper.assertTrue(station.monitorId().isPresent(), "Station did not pick the farm's Crop Monitor");
+        helper.assertTrue(station.wholeFarm() && station.farmMonitors() == 1, "Station linked to a controller does not work on the whole farm");
         var player = FakePlayerFactory.getMinecraft(helper.getLevel());
         var result = station.install(helper.getLevel(), player, FarmBotItem.create(100, 0, null));
         helper.assertTrue(result.success(), "Install failed: " + result);
@@ -133,6 +133,80 @@ public final class FarmBotGameTests {
         var blocked = second.install(helper.getLevel(), player, FarmBotItem.create(100, 0, null));
         helper.assertTrue(blocked == FarmBotStationBlockEntity.InstallResult.DOCK_BLOCKED, "Blocked dock accepted: " + blocked);
         helper.succeed();
+    }
+
+    // ----- Crop Monitor choice: the Farm Controller is optional ------------------------------
+
+    /** Floor, a monitor watching x 2..14 / z 2..12 and a station, without any Farm Controller. */
+    static FarmBotStationBlockEntity standaloneStation(GameTestHelper helper, java.util.UUID monitorOwner, java.util.UUID stationOwner) {
+        for (int x = 0; x <= 16; x++) {
+            for (int z = 0; z <= 16; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.DIRT);
+        }
+        helper.setBlock(MONITOR, ModBlocks.CROP_MONITOR.get());
+        CropMonitorBlockEntity monitor = helper.getBlockEntity(MONITOR);
+        monitor.setOwner(monitorOwner, "monitor_owner");
+        monitor.setZone(new CropZone(helper.absolutePos(new BlockPos(2, 1, 2)), helper.absolutePos(new BlockPos(14, 1, 12))));
+        helper.setBlock(STATION, ModBlocks.FARMBOT_STATION.get().defaultBlockState().setValue(AbstractFarmDeviceBlock.FACING, Direction.NORTH));
+        FarmBotStationBlockEntity station = helper.getBlockEntity(STATION);
+        station.setOwner(stationOwner, "station_owner");
+        return station;
+    }
+
+    @GameTest(template = "field", timeoutTicks = 1200)
+    public static void stationWithoutControllerUsesTheNearbyMonitor(GameTestHelper helper) {
+        var player = FakePlayerFactory.getMinecraft(helper.getLevel());
+        FarmBotStationBlockEntity station = standaloneStation(helper, player.getUUID(), player.getUUID());
+        helper.assertTrue(station.install(helper.getLevel(), player, FarmBotItem.create(100, 0, null)).success(), "Install failed");
+        FarmBotEntity bot = robot(helper, station);
+        BlockPos crop = new BlockPos(6, 1, 6);
+        plant(helper, crop, mature(Blocks.CARROTS));
+        CropMonitorBlockEntity monitor = helper.getBlockEntity(MONITOR);
+        monitor.scanner().requestPass();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(station.controllerLink().isEmpty(), "Station unexpectedly linked to a controller");
+            helper.assertTrue(station.monitorId().map(id -> id.equals(monitor.componentId())).orElse(false), "Nearby monitor not picked");
+            helper.assertTrue(bot.harvested() == 1 && docked(bot), "Robot did not harvest from the nearby monitor");
+        });
+    }
+
+    @GameTest(template = "field", timeoutTicks = 200)
+    public static void anotherPlayersMonitorIsNeverUsed(GameTestHelper helper) {
+        FarmBotStationBlockEntity station = standaloneStation(helper, java.util.UUID.randomUUID(), java.util.UUID.randomUUID());
+        CropMonitorBlockEntity foreign = helper.getBlockEntity(MONITOR);
+        station.cycleMonitor(helper.getLevel(), null);
+        // Other tests' monitors may sit within range in this shared world: only this foreign one matters.
+        helper.runAfterDelay(100, () -> {
+            helper.assertFalse(station.monitorId().map(id -> id.equals(foreign.componentId())).orElse(false),
+                    "Station picked a monitor owned by someone else");
+            helper.assertFalse(station.cropSources(helper.getLevel()).contains(foreign), "Foreign monitor used as a crop source");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "field", timeoutTicks = 1600)
+    public static void wholeFarmModeWorksOnEveryMonitor(GameTestHelper helper) {
+        Rig rig = rig(helper);
+        // A second monitor of the same farm, watching another strip.
+        BlockPos secondPos = new BlockPos(2, 1, 16);
+        helper.setBlock(secondPos, ModBlocks.CROP_MONITOR.get());
+        CropMonitorBlockEntity second = helper.getBlockEntity(secondPos);
+        rig.monitor().setZone(new CropZone(helper.absolutePos(new BlockPos(2, 1, 2)), helper.absolutePos(new BlockPos(14, 1, 5))));
+        second.setZone(new CropZone(helper.absolutePos(new BlockPos(2, 1, 8)), helper.absolutePos(new BlockPos(14, 1, 11))));
+        FarmLinkService.link(helper.getLevel(), rig.controller(), second, 32);
+        plant(helper, new BlockPos(5, 1, 4), mature(Blocks.WHEAT));
+        plant(helper, new BlockPos(9, 1, 10), mature(Blocks.POTATOES));
+        rig.monitor().scanner().requestPass();
+        second.scanner().requestPass();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(rig.station().wholeFarm() && rig.station().farmMonitors() == 2, "Whole farm not counting both monitors");
+            helper.assertTrue(rig.bot().harvested() == 2 && docked(rig.bot()), "Harvested " + rig.bot().harvested() + " of 2");
+            // The MONITOR button pins one monitor, then comes back to the whole farm.
+            rig.station().cycleMonitor(helper.getLevel(), null);
+            helper.assertTrue(!rig.station().wholeFarm() && rig.station().monitorId().isPresent(), "Could not pin one monitor");
+            rig.station().cycleMonitor(helper.getLevel(), null);
+            rig.station().cycleMonitor(helper.getLevel(), null);
+            helper.assertTrue(rig.station().wholeFarm(), "Cycle did not return to the whole farm");
+        });
     }
 
     // ----- Harvest, replanting, unloading ---------------------------------------------------
@@ -597,7 +671,7 @@ public final class FarmBotGameTests {
         helper.assertTrue(station.owns(rig.bot().getUUID()), "Robot association not saved");
         helper.assertTrue(station.output().getStackInSlot(0).getCount() == 3, "Output not saved");
         helper.assertFalse(station.working(), "PAUSE not saved");
-        helper.assertTrue(station.monitorId().equals(rig.station().monitorId()), "Crop Monitor choice not saved");
+        helper.assertTrue(station.wholeFarm() && station.monitorId().equals(rig.station().monitorId()), "Crop Monitor choice not saved");
         helper.assertTrue(station.controllerLink().isPresent(), "Controller link not saved");
         helper.succeed();
     }
