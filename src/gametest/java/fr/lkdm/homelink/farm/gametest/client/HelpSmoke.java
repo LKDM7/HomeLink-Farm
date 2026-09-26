@@ -18,8 +18,8 @@ final class HelpSmoke {
     static void define() {
         step("hide first-play tutorial", () -> true, () -> Minecraft.getInstance().getTutorial()
                 .setStep(net.minecraft.client.tutorial.TutorialSteps.NONE));
-        var blocks = java.util.List.of(ModBlocks.FARM_CONTROLLER, ModBlocks.CROP_MONITOR, ModBlocks.IRRIGATION_PUMP);
-        var names = java.util.List.of("controller", "monitor", "pump");
+        var blocks = java.util.List.of(ModBlocks.FARM_CONTROLLER, ModBlocks.CROP_MONITOR, ModBlocks.IRRIGATION_PUMP, ModBlocks.FARMBOT_STATION);
+        var names = java.util.List.of("controller", "monitor", "pump", "station");
         for (int i = 0; i < blocks.size(); i++) {
             var block = blocks.get(i);
             String name = names.get(i);

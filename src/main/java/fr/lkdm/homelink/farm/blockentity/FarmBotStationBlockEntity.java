@@ -6,6 +6,7 @@ import fr.lkdm.homelink.farm.farm.FarmAccess;
 import fr.lkdm.homelink.farm.farm.bot.FarmBotDock;
 import fr.lkdm.homelink.farm.farm.bot.FarmBotHome;
 import fr.lkdm.homelink.farm.farm.bot.FarmBotSnapshot;
+import fr.lkdm.homelink.farm.farm.bot.StationOutputTransfer;
 import fr.lkdm.homelink.farm.farm.controller.ControllerLink;
 import fr.lkdm.homelink.farm.farm.controller.FarmComponent;
 import fr.lkdm.homelink.farm.farm.controller.FarmComponentKind;
@@ -59,13 +60,16 @@ import org.jetbrains.annotations.Nullable;
  * other component (optional): the robot then works on every Crop Monitor of that farm, or on the one
  * pinned with the MONITOR button. Without a controller it works from the nearest Crop Monitor of the
  * same owner within link range.
- * The dock is the block in front of the station (its FACING side).
+ * The dock is the block in front of the station (its FACING side). A storage input placed against
+ * the station (HomeLink Storage Deposit) receives its output every second.
  */
 public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
         implements FarmComponent, ServerTickingDevice, DeviceCommandTarget, FarmBotHome, FarmBotStationView {
     public static final int OUTPUT_SIZE = 9;
     /** How often the station checks its robot and monitor (cheap lookups, no scanning). */
     static final int CHECK_INTERVAL = 40;
+    /** How often the output is emptied into an adjacent storage input ({@link StationOutputTransfer}). */
+    static final int OUTPUT_INTERVAL = 20;
 
     public enum InstallResult {
         INSTALLED, OCCUPIED, DOCK_BLOCKED, NO_PERMISSION, FAILED;
@@ -425,7 +429,9 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
 
     @Override
     public void serverTick(ServerLevel level) {
-        if (Math.floorMod(level.getGameTime() + getBlockPos().hashCode(), CHECK_INTERVAL) != 0) return;
+        long phase = level.getGameTime() + getBlockPos().hashCode();
+        if (outputUsed > 0 && Math.floorMod(phase, OUTPUT_INTERVAL) == 0) StationOutputTransfer.push(level, getBlockPos(), output);
+        if (Math.floorMod(phase, CHECK_INTERVAL) != 0) return;
         if (robot != null && robotGone(level)) releaseRobot(robot);
         // Zero configuration: the whole farm with a controller, otherwise the nearest usable monitor.
         if (controllerLink != null) {

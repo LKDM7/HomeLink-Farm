@@ -1,0 +1,5 @@
+{
+  "values": [
+    { "id": "homelink_storage:storage_deposit", "required": false }
+  ]
+}
