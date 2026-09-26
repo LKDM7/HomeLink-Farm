@@ -36,6 +36,8 @@ public final class ClientSmoke {
     private static final String SCENARIO = System.getProperty("homelink_farm.clientSmoke", "");
     private static final boolean ENABLED = !SCENARIO.isEmpty() && !SCENARIO.equals("false");
     private static final boolean PLAYER = SCENARIO.equals("player");
+    // Interactive session driven by a command file, no timeout: see {@link LiveSession}.
+    private static final boolean LIVE = SCENARIO.equals("live");
     // The default run includes the FarmBot scene, whose robot really drives and harvests (about 30 s).
     private static final long TIMEOUT_NANOS = (PLAYER ? 420L : 180L) * 1_000_000_000L;
     /** Folder of the world created for this run (used to reload it). */
@@ -61,6 +63,15 @@ public final class ClientSmoke {
 
     static void pause(int ticks) {
         STEPS.add(new Step("pause", () -> true, () -> waitTicks = ticks));
+    }
+
+    /** Moves the steps that {@code definer} appends so they run right after the current step. */
+    static void insertNext(Runnable definer) {
+        int from = STEPS.size();
+        definer.run();
+        List<Step> added = new ArrayList<>(STEPS.subList(from, STEPS.size()));
+        STEPS.subList(from, STEPS.size()).clear();
+        STEPS.addAll(stepIndex + 1, added);
     }
 
     /** Runs server-side work on the integrated server thread, recording failures. */
@@ -128,12 +139,14 @@ public final class ClientSmoke {
                 createWorld(client);
                 return;
             }
-            if (System.nanoTime() - started > TIMEOUT_NANOS) throw new IllegalStateException("Timed out at step " + stepIndex);
+            if (!LIVE && System.nanoTime() - started > TIMEOUT_NANOS) throw new IllegalStateException("Timed out at step " + stepIndex);
             if (serverFailure != null) throw new IllegalStateException("Server-side step failed", serverFailure);
             if (stage == -1) {
                 if (client.player == null || client.getSingleplayerServer() == null || client.level == null) return;
                 stage = 0;
-                if (SCENARIO.equals("textures")) {
+                if (LIVE) {
+                    LiveSession.define();
+                } else if (SCENARIO.equals("textures")) {
                     TextureSmoke.define();
                 } else if (SCENARIO.equals("help")) {
                     HelpSmoke.define();
@@ -166,6 +179,14 @@ public final class ClientSmoke {
             HomeLinkFarm.LOGGER.info("HOMELINK_FARM_SMOKE step {} '{}' done", stepIndex, current.name());
             stepIndex++;
         } catch (Throwable failure) {
+            if (LIVE) {
+                // A failed live command must not end the session: drop the rest of its batch.
+                HomeLinkFarm.LOGGER.error("HOMELINK_FARM_LIVE step {} failed", stepIndex, failure);
+                STEPS.subList(stepIndex, STEPS.size()).clear();
+                serverFailure = null;
+                LiveSession.failed(failure);
+                return;
+            }
             HomeLinkFarm.LOGGER.error("HOMELINK_FARM_CLIENT_SMOKE_FAILED at step {}", stepIndex, failure);
             shutdown(client);
         }
