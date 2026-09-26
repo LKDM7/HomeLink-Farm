@@ -1,1 +1,157 @@
-{ "parent": "minecraft:item/handheld", "textures": { "layer0": "homelink_farm:item/farm_connector" } }
+{
+  "gui_light": "side",
+  "textures": {
+    "tool": "homelink_farm:item/farm_connector",
+    "particle": "homelink_farm:item/farm_connector"
+  },
+  "elements": [
+    {
+      "name": "pommel",
+      "from": [6.5, 0, 6.5],
+      "to": [9.5, 1, 9.5],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [0, 0, 3, 1] },
+        "south": { "texture": "#tool", "uv": [0, 0, 3, 1] },
+        "east": { "texture": "#tool", "uv": [0, 0, 3, 1] },
+        "west": { "texture": "#tool", "uv": [0, 0, 3, 1] },
+        "up": { "texture": "#tool", "uv": [0, 0, 3, 3] },
+        "down": { "texture": "#tool", "uv": [0, 0, 3, 3] }
+      }
+    },
+    {
+      "name": "grip",
+      "from": [7, 1, 7],
+      "to": [9, 6, 9],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [4, 0, 6, 5] },
+        "south": { "texture": "#tool", "uv": [4, 0, 6, 5] },
+        "east": { "texture": "#tool", "uv": [4, 0, 6, 5] },
+        "west": { "texture": "#tool", "uv": [4, 0, 6, 5] }
+      }
+    },
+    {
+      "name": "collar",
+      "from": [6.5, 6, 6.5],
+      "to": [9.5, 6.5, 9.5],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [6, 0, 9, 0.5] },
+        "south": { "texture": "#tool", "uv": [6, 0, 9, 0.5] },
+        "east": { "texture": "#tool", "uv": [6, 0, 9, 0.5] },
+        "west": { "texture": "#tool", "uv": [6, 0, 9, 0.5] },
+        "up": { "texture": "#tool", "uv": [6, 0, 9, 3] },
+        "down": { "texture": "#tool", "uv": [6, 0, 9, 3] }
+      }
+    },
+    {
+      "name": "housing",
+      "from": [6, 6.5, 6.5],
+      "to": [10, 11, 9.5],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [10, 0, 14, 4.5] },
+        "south": { "texture": "#tool", "uv": [10, 0, 14, 4.5] },
+        "east": { "texture": "#tool", "uv": [10, 0, 13, 4.5] },
+        "west": { "texture": "#tool", "uv": [10, 0, 13, 4.5] },
+        "up": { "texture": "#tool", "uv": [10, 0, 14, 3] },
+        "down": { "texture": "#tool", "uv": [10, 0, 14, 3] }
+      }
+    },
+    {
+      "name": "screen",
+      "from": [6.75, 8, 9.5],
+      "to": [9.25, 10.25, 9.75],
+      "faces": {
+        "south": { "texture": "#tool", "uv": [4, 5, 6.5, 7.25] },
+        "east": { "texture": "#tool", "uv": [4, 5, 4.25, 7.25] },
+        "west": { "texture": "#tool", "uv": [4, 5, 4.25, 7.25] },
+        "up": { "texture": "#tool", "uv": [4, 5, 6.5, 5.25] },
+        "down": { "texture": "#tool", "uv": [4, 5, 6.5, 5.25] }
+      },
+      "neoforge_data": { "block_light": 15, "sky_light": 15, "ambient_occlusion": false }
+    },
+    {
+      "name": "dial",
+      "from": [10, 8.5, 7.5],
+      "to": [10.5, 9.5, 8.5],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [6, 0, 6.5, 1] },
+        "south": { "texture": "#tool", "uv": [6, 0, 6.5, 1] },
+        "east": { "texture": "#tool", "uv": [6, 0, 7, 1] },
+        "up": { "texture": "#tool", "uv": [6, 0, 6.5, 1] },
+        "down": { "texture": "#tool", "uv": [6, 0, 6.5, 1] }
+      }
+    },
+    {
+      "name": "cap",
+      "from": [6.5, 11, 7],
+      "to": [9.5, 11.5, 9],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [0, 0, 3, 0.5] },
+        "south": { "texture": "#tool", "uv": [0, 0, 3, 0.5] },
+        "east": { "texture": "#tool", "uv": [0, 0, 2, 0.5] },
+        "west": { "texture": "#tool", "uv": [0, 0, 2, 0.5] },
+        "up": { "texture": "#tool", "uv": [0, 0, 3, 2] }
+      }
+    },
+    {
+      "name": "neck",
+      "from": [7.5, 11.5, 7.5],
+      "to": [8.5, 14, 8.5],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [0, 0, 1, 2.5] },
+        "south": { "texture": "#tool", "uv": [0, 0, 1, 2.5] },
+        "east": { "texture": "#tool", "uv": [0, 0, 1, 2.5] },
+        "west": { "texture": "#tool", "uv": [0, 0, 1, 2.5] }
+      }
+    },
+    {
+      "name": "coil_low",
+      "from": [7, 12, 7],
+      "to": [9, 12.5, 9],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "south": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "east": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "west": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "up": { "texture": "#tool", "uv": [0, 5, 2, 7] },
+        "down": { "texture": "#tool", "uv": [0, 5, 2, 7] }
+      }
+    },
+    {
+      "name": "coil_high",
+      "from": [7, 13, 7],
+      "to": [9, 13.5, 9],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "south": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "east": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "west": { "texture": "#tool", "uv": [0, 5, 2, 5.5] },
+        "up": { "texture": "#tool", "uv": [0, 5, 2, 7] },
+        "down": { "texture": "#tool", "uv": [0, 5, 2, 7] }
+      }
+    },
+    {
+      "name": "emitter",
+      "from": [7.25, 14, 7.25],
+      "to": [8.75, 15.5, 8.75],
+      "faces": {
+        "north": { "texture": "#tool", "uv": [7, 5, 8.5, 6.5] },
+        "south": { "texture": "#tool", "uv": [7, 5, 8.5, 6.5] },
+        "east": { "texture": "#tool", "uv": [7, 5, 8.5, 6.5] },
+        "west": { "texture": "#tool", "uv": [7, 5, 8.5, 6.5] },
+        "up": { "texture": "#tool", "uv": [7, 5, 8.5, 6.5] },
+        "down": { "texture": "#tool", "uv": [7, 5, 8.5, 6.5] }
+      },
+      "neoforge_data": { "block_light": 15, "sky_light": 15, "ambient_occlusion": false }
+    }
+  ],
+  "display": {
+    "gui": { "rotation": [15, -30, -40], "translation": [0, 0, 0], "scale": [1.15, 1.15, 1.15] },
+    "ground": { "rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5] },
+    "fixed": { "rotation": [0, 180, -45], "translation": [0, 0, 0], "scale": [1, 1, 1] },
+    "head": { "rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1] },
+    "thirdperson_righthand": { "rotation": [20, 0, 0], "translation": [0, 4, 1], "scale": [0.85, 0.85, 0.85] },
+    "thirdperson_lefthand": { "rotation": [20, 0, 0], "translation": [0, 4, 1], "scale": [0.85, 0.85, 0.85] },
+    "firstperson_righthand": { "rotation": [-20, -10, 10], "translation": [1, 3.2, 1], "scale": [0.55, 0.55, 0.55] },
+    "firstperson_lefthand": { "rotation": [-20, 10, -10], "translation": [1, 3.2, 1], "scale": [0.55, 0.55, 0.55] }
+  }
+}

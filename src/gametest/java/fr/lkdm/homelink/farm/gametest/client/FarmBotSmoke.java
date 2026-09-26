@@ -128,7 +128,8 @@ final class FarmBotSmoke {
         step("station front camera", () -> true, () -> onServer(player -> {
             player.getInventory().setItem(0, new ItemStack(fr.lkdm.homelink.farm.registry.ModItems.FARMBOT.get()));
             player.getInventory().setItem(1, new ItemStack(fr.lkdm.homelink.farm.registry.ModItems.FARMBOT_STATION.get()));
-            player.getInventory().selected = 2;
+            player.getInventory().setItem(2, new ItemStack(fr.lkdm.homelink.farm.registry.ModItems.FARM_CONNECTOR.get()));
+            player.getInventory().selected = 3;
             look(player, new Vec3(51.9, GROUND + 2.0, 49.6), Vec3.atCenterOf(EMPTY_STATION).add(0, -0.1, 0));
         }));
         pause(30);
@@ -149,6 +150,21 @@ final class FarmBotSmoke {
         step("item inventory screenshot", () -> true, () -> {
             screenshot("farmbot_item_inventory");
             Minecraft.getInstance().setScreen(null);
+        });
+        // The Farm Connector is a 3D tool model as well.
+        step("hold the connector", () -> true, () -> Minecraft.getInstance().player.getInventory().selected = 2);
+        pause(10);
+        step("connector in hand screenshot", () -> true, () -> screenshot("connector_item_hand"));
+        step("connector third person", () -> true, () -> Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT));
+        pause(10);
+        step("connector third person screenshot", () -> true, () -> {
+            screenshot("connector_item_third_person");
+            Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+        });
+        pause(10);
+        step("connector back view screenshot", () -> true, () -> {
+            screenshot("connector_item_back");
+            Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
         });
         openStation(EMPTY_STATION);
         step("empty station screenshot", () -> true, () -> {
