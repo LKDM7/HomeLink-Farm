@@ -144,6 +144,7 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
 
     @Override
     public void serverTick(ServerLevel level) {
+        if (!drawEnergy(level)) return;
         CropScanResult completed = scanner.tick(level, CropInspector.INSTANCE);
         if (completed == null) return;
         boolean changed = result == null || !result.sameFigures(completed);
@@ -191,6 +192,11 @@ public class CropMonitorBlockEntity extends AbstractFarmDeviceBlockEntity
             case CYCLE_COMPARATOR -> setComparatorMode(comparatorMode.next());
             default -> { }
         }
+    }
+
+    @Override
+    protected long energyPerMinute() {
+        return configured(fr.lkdm.homelink.farm.config.FarmServerConfig.CROP_MONITOR_ENERGY);
     }
 
     @Override public UUID componentId() { return deviceId(); }

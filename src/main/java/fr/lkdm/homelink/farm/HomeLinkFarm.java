@@ -48,11 +48,21 @@ public final class HomeLinkFarm {
         modBus.addListener(ModPayloads::register);
         modBus.addListener(this::commonSetup);
         modBus.addListener(ModEntities::registerAttributes);
+        modBus.addListener(HomeLinkFarm::registerCapabilities);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onFarmlandTrample);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onLevelUnload);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onLevelTick);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onChunkLoad);
         NeoForge.EVENT_BUS.addListener(HomeLinkFarm::onChunkUnload);
+    }
+
+    /** Every powered machine takes HE on all faces through the shared HomeCore energy capability. */
+    private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        var port = fr.lkdm.homecore.api.energy.EnergyApi.BLOCK;
+        event.registerBlockEntity(port, ModBlockEntities.IRRIGATION_PUMP.get(), (device, side) -> device.energyPort());
+        event.registerBlockEntity(port, ModBlockEntities.CROP_MONITOR.get(), (device, side) -> device.energyPort());
+        event.registerBlockEntity(port, ModBlockEntities.FARM_CONTROLLER.get(), (device, side) -> device.energyPort());
+        event.registerBlockEntity(port, ModBlockEntities.FARMBOT_STATION.get(), (device, side) -> device.energyPort());
     }
 
     private static void onChunkLoad(ChunkEvent.Load event) {

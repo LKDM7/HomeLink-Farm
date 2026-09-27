@@ -31,3 +31,11 @@ reason = "HomeLink Farm publishes its devices, metrics, actions and events throu
 versionRange = "${homecore_version_range}"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies."${mod_id}"]]
+modId = "homelink_energy"
+type = "required"
+reason = "Every HomeLink Farm machine runs on HE supplied by HomeLink Energy (solar panels, wind turbines, batteries, cables)."
+versionRange = "${energy_version_range}"
+ordering = "NONE"
+side = "BOTH"

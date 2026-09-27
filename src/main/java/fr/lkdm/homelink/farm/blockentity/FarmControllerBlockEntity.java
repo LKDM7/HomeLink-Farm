@@ -56,13 +56,20 @@ public class FarmControllerBlockEntity extends AbstractFarmDeviceBlockEntity
     }
 
     @Override
+    protected long energyPerMinute() {
+        return configured(fr.lkdm.homelink.farm.config.FarmServerConfig.CONTROLLER_ENERGY);
+    }
+
+    @Override
     public void serverTick(ServerLevel level) {
+        if (!drawEnergy(level)) return;
         if (Math.floorMod(level.getGameTime() + getBlockPos().hashCode(), AGGREGATE_INTERVAL) != 0) return;
         refreshSummary(level);
     }
 
     @Override
     protected void onMenuOpened(ServerPlayer player) {
+        if (!energized()) return;
         FarmLinkService.pruneStaleComponents(player.serverLevel(), this);
         refreshSummary(player.serverLevel());
     }

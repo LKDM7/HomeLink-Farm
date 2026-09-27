@@ -121,7 +121,7 @@ public final class FarmBotBrain {
             goHome(level, FarmBotState.RETURNING);
             return;
         }
-        bot.charge();
+        if (station.powered()) bot.charge();
         if (!bot.inventoryEmpty()) {
             if (now % UNLOAD_INTERVAL == 0) unloadBlocked = !unloadOne(station);
             set(unloadBlocked ? FarmBotState.OUTPUT_BLOCKED : FarmBotState.UNLOADING, FarmBotFault.NONE);
@@ -130,6 +130,10 @@ public final class FarmBotBrain {
         unloadBlocked = false;
         if (!station.working()) {
             set(FarmBotState.PAUSED, FarmBotFault.NONE);
+            return;
+        }
+        if (!station.powered()) {
+            set(FarmBotState.NO_STATION_POWER, FarmBotFault.NONE);
             return;
         }
         if (bot.batteryPercent() >= DEPART_BATTERY && now >= nextSearch) {

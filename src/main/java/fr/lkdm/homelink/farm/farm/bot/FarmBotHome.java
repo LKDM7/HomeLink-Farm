@@ -30,6 +30,9 @@ public interface FarmBotHome {
     /** START / PAUSE: false while the player paused the robot. */
     boolean working();
 
+    /** Whether the station has HomeLink Energy: the robot only recharges and leaves from a powered station. */
+    boolean powered();
+
     /** Returns true once when RETURN HOME was requested since the last call. */
     boolean consumeReturnRequest();
 

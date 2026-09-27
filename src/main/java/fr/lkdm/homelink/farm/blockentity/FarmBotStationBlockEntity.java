@@ -214,6 +214,16 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
     }
 
     @Override
+    public boolean powered() {
+        return energized();
+    }
+
+    @Override
+    protected long energyPerMinute() {
+        return configured(fr.lkdm.homelink.farm.config.FarmServerConfig.FARMBOT_STATION_ENERGY);
+    }
+
+    @Override
     public boolean consumeReturnRequest() {
         boolean requested = returnRequested;
         returnRequested = false;
@@ -222,6 +232,13 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
 
     @Override
     public List<CropMonitorBlockEntity> cropSources(ServerLevel level) {
+        List<CropMonitorBlockEntity> sources = new ArrayList<>(allCropSources(level));
+        sources.removeIf(monitor -> !monitor.energized());
+        return sources;
+    }
+
+    /** Crop sources before dropping the monitors that have no HomeLink Energy (their scan is stale). */
+    private List<CropMonitorBlockEntity> allCropSources(ServerLevel level) {
         if (wholeFarm()) {
             List<CropMonitorBlockEntity> sources = new ArrayList<>();
             for (MonitorEntry entry : farmChoices(level).orElse(List.of())) {
@@ -429,6 +446,7 @@ public class FarmBotStationBlockEntity extends AbstractFarmDeviceBlockEntity
 
     @Override
     public void serverTick(ServerLevel level) {
+        if (robot != null) drawEnergy(level);
         long phase = level.getGameTime() + getBlockPos().hashCode();
         if (outputUsed > 0 && Math.floorMod(phase, OUTPUT_INTERVAL) == 0) StationOutputTransfer.push(level, getBlockPos(), output);
         if (Math.floorMod(phase, CHECK_INTERVAL) != 0) return;

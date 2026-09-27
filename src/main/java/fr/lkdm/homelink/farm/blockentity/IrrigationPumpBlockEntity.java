@@ -66,7 +66,17 @@ public class IrrigationPumpBlockEntity extends AbstractFarmDeviceBlockEntity
 
     /** Whether this pump currently supplies water to its network. */
     public boolean canSupply() {
+        return wantsToPump() && energized();
+    }
+
+    /** Enabled, allowed by redstone and next to water: the pump runs if it also has HE. */
+    private boolean wantsToPump() {
         return enabled && water && redstoneMode.allows(powered);
+    }
+
+    @Override
+    protected long energyPerMinute() {
+        return configured(fr.lkdm.homelink.farm.config.FarmServerConfig.PUMP_ENERGY);
     }
 
     public RedstoneMode redstoneMode() {
@@ -168,6 +178,10 @@ public class IrrigationPumpBlockEntity extends AbstractFarmDeviceBlockEntity
     @Override
     public void serverTick(ServerLevel level) {
         boolean scheduled = Math.floorMod(level.getGameTime() + getBlockPos().hashCode(), UPDATE_INTERVAL) == 0;
+        if (wantsToPump()) {
+            boolean wasEnergized = energized();
+            if (drawEnergy(level) != wasEnergized) updateNow = true;
+        }
         if (!scheduled && !updateNow) return;
         updateNow = false;
         if (waterDirty || scheduled) {
@@ -181,7 +195,7 @@ public class IrrigationPumpBlockEntity extends AbstractFarmDeviceBlockEntity
         if (scheduled && ++cropCountCycle % CROP_COUNT_EVERY == 0 || !network.state().irrigates()) {
             irrigatedCrops = manager.countIrrigatedCrops(network);
         }
-        PumpSnapshot updated = new PumpSnapshot(PumpStatus.of(enabled, redstoneMode.allows(powered), water, network), water, network.sprinklers().size(),
+        PumpSnapshot updated = new PumpSnapshot(PumpStatus.of(enabled, redstoneMode.allows(powered), water, energized(), network), water, network.sprinklers().size(),
                 network.capacity(), network.pipes(), network.pumps().size(), network.incomplete(), irrigatedCrops);
         if (updated.equals(snapshot)) return;
         snapshot = updated;

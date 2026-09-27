@@ -31,6 +31,11 @@ public final class FarmServerConfig {
     public static final ModConfigSpec.IntValue FARMBOT_TARGET_RETRY_LIMIT;
     public static final ModConfigSpec.IntValue FARMBOT_SEARCH_COOLDOWN;
 
+    public static final ModConfigSpec.IntValue PUMP_ENERGY;
+    public static final ModConfigSpec.IntValue CROP_MONITOR_ENERGY;
+    public static final ModConfigSpec.IntValue CONTROLLER_ENERGY;
+    public static final ModConfigSpec.IntValue FARMBOT_STATION_ENERGY;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("controller");
@@ -111,6 +116,23 @@ public final class FarmServerConfig {
         FARMBOT_SEARCH_COOLDOWN = builder
                 .comment("Ticks between two searches for a mature crop when none was available.")
                 .defineInRange("farmbotSearchCooldown", 40, 5, 1200);
+        builder.pop();
+
+        builder.comment("HomeLink Energy (HE) each machine uses per minute (1200 ticks) while it runs.",
+                "Without enough HE a machine stops until power comes back. For scale: a Solar Panel I",
+                "averages 100 HE per minute over a day, a Solar Panel III 1000. 0 lets the machine run for free.").push("energy");
+        PUMP_ENERGY = builder
+                .comment("Irrigation Pump, while it pumps water to its sprinklers.")
+                .defineInRange("pumpEnergyPerMinute", 60, 0, 1_000_000);
+        CROP_MONITOR_ENERGY = builder
+                .comment("Crop Monitor, while it scans its zone.")
+                .defineInRange("cropMonitorEnergyPerMinute", 20, 0, 1_000_000);
+        CONTROLLER_ENERGY = builder
+                .comment("Farm Controller, while it aggregates its farm.")
+                .defineInRange("controllerEnergyPerMinute", 30, 0, 1_000_000);
+        FARMBOT_STATION_ENERGY = builder
+                .comment("FarmBot Station, while a FarmBot is assigned to it; the robot only recharges and leaves from a powered station.")
+                .defineInRange("farmbotStationEnergyPerMinute", 120, 0, 1_000_000);
         builder.pop();
 
         SPEC = builder.build();

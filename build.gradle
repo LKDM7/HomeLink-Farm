@@ -38,6 +38,8 @@ configurations {
 
 dependencies {
     implementation "fr.lkdm.homecore:homecore:${homecore_version}"
+    // Required at runtime: machines only run on HE supplied by HomeLink Energy networks.
+    runtimeOnly "fr.lkdm.homelink.energy:homelink_energy:${energy_version}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -122,6 +124,7 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
         neo_version_range      : neo_version_range,
         loader_version_range   : loader_version_range,
         homecore_version_range : homecore_version_range,
+        energy_version_range   : energy_version_range,
         mod_id                 : mod_id,
         mod_name               : mod_name,
         mod_license            : mod_license,

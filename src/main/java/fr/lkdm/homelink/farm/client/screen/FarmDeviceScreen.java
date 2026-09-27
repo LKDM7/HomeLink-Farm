@@ -66,7 +66,8 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         super(menu, inventory, title);
         this.deviceClass = deviceClass;
         imageWidth = WIDTH;
-        imageHeight = height;
+        // One more status line for the HomeLink Energy charge of every device.
+        imageHeight = height + LINE_HEIGHT;
     }
 
     @Override
@@ -216,6 +217,12 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     }
 
     /** Header status; by default whether the device is linked (its lights blink in the world). */
+    private HeaderStatus headerOrNoPower(T device) {
+        return device.energyPort() != null && !device.energized()
+                ? new HeaderStatus(Component.translatable("gui.homelink_farm.energy.no_power"), BAD)
+                : headerStatus(device);
+    }
+
     protected HeaderStatus headerStatus(T device) {
         return device.isLinked()
                 ? new HeaderStatus(Component.translatable("gui.homelink_farm.linked"), GOOD)
@@ -225,7 +232,18 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     private List<Line> lines(T device) {
         List<Line> lines = new ArrayList<>();
         collectLines(device, lines);
+        if (device.energyPort() != null) lines.add(energyLine(device));
         return lines;
+    }
+
+    /** Charge of the device's HomeLink Energy buffer, or NO POWER once it stopped for lack of HE. */
+    private Line energyLine(T device) {
+        int percent = device.energyPercent();
+        Component value = device.energized() || percent > 0
+                ? Component.literal(percent + "%")
+                : Component.translatable("gui.homelink_farm.energy.none");
+        int color = !device.energized() ? BAD : percent < 25 ? WARN : GOOD;
+        return new Line(Component.translatable("gui.homelink_farm.energy"), value, color, percent / 100F);
     }
 
     @Override
@@ -245,7 +263,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         Optional<T> device = device();
-        HeaderStatus status = device.map(this::headerStatus)
+        HeaderStatus status = device.map(this::headerOrNoPower)
                 .orElse(new HeaderStatus(Component.translatable("gui.homelink_farm.unavailable"), BAD));
         String statusText = font.plainSubstrByWidth(status.text().getString(), 90);
         int statusX = imageWidth - 38 - font.width(statusText);

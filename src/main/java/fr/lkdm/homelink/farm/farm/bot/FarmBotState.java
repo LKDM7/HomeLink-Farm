@@ -22,7 +22,9 @@ public enum FarmBotState {
     LOW_BATTERY,
     OUT_OF_POWER,
     STUCK,
-    ERROR;
+    ERROR,
+    /** Docked on a station without HomeLink Energy: no charging, no departure. */
+    NO_STATION_POWER;
 
     public String serializedName() {
         return name().toLowerCase(Locale.ROOT);
@@ -44,7 +46,7 @@ public enum FarmBotState {
 
     /** Needs the player (or the world) to change something. */
     public boolean isFault() {
-        return this == OUTPUT_BLOCKED || this == OUT_OF_POWER || this == STUCK || this == ERROR;
+        return this == OUTPUT_BLOCKED || this == OUT_OF_POWER || this == STUCK || this == ERROR || this == NO_STATION_POWER;
     }
 
     public static FarmBotState byId(int id) {

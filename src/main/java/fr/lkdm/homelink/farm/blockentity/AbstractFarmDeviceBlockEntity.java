@@ -1,6 +1,8 @@
 package fr.lkdm.homelink.farm.blockentity;
 
+import fr.lkdm.homecore.api.energy.EnergyBuffer;
 import fr.lkdm.homelink.farm.block.AbstractFarmDeviceBlock;
+import fr.lkdm.homelink.farm.config.FarmServerConfig;
 import fr.lkdm.homelink.farm.farm.DeviceNames;
 import fr.lkdm.homelink.farm.menu.FarmDeviceMenu;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -37,6 +40,12 @@ public abstract class AbstractFarmDeviceBlockEntity extends BlockEntity implemen
     @Nullable
     private UUID homeNetwork;
     private String homeNetworkName = "";
+    /** HE received from HomeLink Energy networks; filled through the HomeCore energy capability. */
+    private final EnergyBuffer energy = new EnergyBuffer(this::energyCapacity, this::onEnergyChanged);
+    /** Server truth, mirrored on clients: whether the last running tick found enough HE. */
+    private boolean energized;
+    /** Charge shown on clients, 0..100; resynchronized only when it changes. */
+    private int energyPercent;
 
     protected AbstractFarmDeviceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -58,6 +67,66 @@ public abstract class AbstractFarmDeviceBlockEntity extends BlockEntity implemen
         homeNetwork = null;
         homeNetworkName = "";
         setChangedAndSync();
+    }
+
+    /**
+     * HE this device uses per minute (1200 ticks) while it runs, from the server config.
+     * Zero means the device needs no energy.
+     */
+    protected long energyPerMinute() {
+        return 0;
+    }
+
+    private long energyCapacity() {
+        return energyPerMinute() * ENERGY_BUFFER_MINUTES;
+    }
+
+    /** Minutes of running cost the internal buffer holds, so short gaps in supply go unnoticed. */
+    public static final int ENERGY_BUFFER_MINUTES = 2;
+
+    /** Current value of a server config entry, or zero before the config is loaded. */
+    protected static long configured(net.neoforged.neoforge.common.ModConfigSpec.IntValue value) {
+        return FarmServerConfig.SPEC.isLoaded() ? value.get() : 0;
+    }
+
+    /** Energy port exposed on every face; null when this device needs no energy. */
+    @Nullable
+    public EnergyBuffer energyPort() {
+        return energyPerMinute() > 0 ? energy : null;
+    }
+
+    /** Whether the device had enough HE on its last running tick (client: mirrored). */
+    public boolean energized() {
+        return energized || energyPerMinute() <= 0;
+    }
+
+    /** Charge of the internal buffer, 0..100 (client: mirrored). */
+    public int energyPercent() {
+        return energyPercent;
+    }
+
+    /**
+     * Server: pays this tick's share of the running cost. Call it on every tick the device
+     * wants to work, and do nothing that tick when it returns false.
+     *
+     * @return whether the device is powered and may work this tick
+     */
+    protected boolean drawEnergy(ServerLevel level) {
+        boolean powered = energy.draw(energyPerMinute(), 1200, level.getGameTime());
+        if (powered != energized) {
+            energized = powered;
+            setChangedAndSync();
+        }
+        return powered;
+    }
+
+    private void onEnergyChanged() {
+        setChanged();
+        int percent = energy.percent();
+        if (percent != energyPercent) {
+            energyPercent = percent;
+            syncToClients();
+        }
     }
 
     /** Whether this device is published to HomeCore (and can join a HomeNetwork). */
@@ -178,6 +247,9 @@ public abstract class AbstractFarmDeviceBlockEntity extends BlockEntity implemen
         if (owner != null) tag.putUUID("Owner", owner);
         tag.putString("OwnerName", ownerName);
         tag.putString("CustomName", customName);
+        energy.save(tag, "Energy");
+        tag.putBoolean("Energized", energized);
+        tag.putInt("EnergyPercent", energy.percent());
         if (homeNetwork != null) {
             tag.putUUID("HomeNetwork", homeNetwork);
             tag.putString("HomeNetworkName", homeNetworkName);
@@ -191,6 +263,9 @@ public abstract class AbstractFarmDeviceBlockEntity extends BlockEntity implemen
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         ownerName = tag.getString("OwnerName");
         customName = DeviceNames.sanitize(tag.getString("CustomName"));
+        energy.load(tag, "Energy");
+        energized = tag.getBoolean("Energized");
+        energyPercent = tag.getInt("EnergyPercent");
         homeNetwork = tag.hasUUID("HomeNetwork") ? tag.getUUID("HomeNetwork") : null;
         homeNetworkName = homeNetwork == null ? "" : tag.getString("HomeNetworkName");
     }
