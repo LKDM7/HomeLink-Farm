@@ -17,7 +17,7 @@
       "item": "minecraft:copper_ingot"
     },
     "B": {
-      "item": "homecore:homelink_circuit_board"
+      "item": "homecore:homelink_control_module"
     },
     "H": {
       "tag": "c:chests/wooden"

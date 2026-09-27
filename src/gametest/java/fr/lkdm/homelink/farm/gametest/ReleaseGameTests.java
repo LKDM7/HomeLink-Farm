@@ -27,26 +27,31 @@ public final class ReleaseGameTests {
     private ReleaseGameTests() {
     }
 
-    /** Electronic devices are built from HomeCore's shared components (HomeCore 1.6.1+ is required). */
+    /** Electronic devices are built from HomeCore's shared components (HomeCore 1.7.0+ is required): communication modules for the devices that report, control modules for the machines. */
     @GameTest(template = "empty")
     public static void deviceRecipesUseHomeCoreComponents(GameTestHelper helper) {
         var recipes = helper.getLevel().getServer().getRecipeManager();
         var board = BuiltInRegistries.ITEM.get(ResourceLocation.parse("homecore:homelink_circuit_board"));
         var chip = BuiltInRegistries.ITEM.get(ResourceLocation.parse("homecore:homelink_microprocessor"));
-        helper.assertTrue(board != net.minecraft.world.item.Items.AIR && chip != net.minecraft.world.item.Items.AIR, "HomeCore components missing");
+        var communication = BuiltInRegistries.ITEM.get(ResourceLocation.parse("homecore:homelink_communication_module"));
+        var control = BuiltInRegistries.ITEM.get(ResourceLocation.parse("homecore:homelink_control_module"));
+        var components = java.util.List.of(board, chip, communication, control);
+        helper.assertTrue(components.stream().noneMatch(item -> item == net.minecraft.world.item.Items.AIR), "HomeCore components missing");
         java.util.Map<String, java.util.List<net.minecraft.world.item.Item>> expected = java.util.Map.of(
-                "farm_controller", java.util.List.of(chip),
-                "crop_monitor", java.util.List.of(board),
-                "irrigation_pump", java.util.List.of(board),
-                "farmbot", java.util.List.of(chip, board),
-                "farmbot_station", java.util.List.of(board));
-        expected.forEach((name, components) -> {
+                "farm_controller", java.util.List.of(chip, communication),
+                "crop_monitor", java.util.List.of(communication),
+                "irrigation_pump", java.util.List.of(control),
+                "farmbot", java.util.List.of(chip, control),
+                "farmbot_station", java.util.List.of(communication));
+        expected.forEach((name, used) -> {
             var recipe = recipes.byKey(HomeLinkFarm.id(name)).orElse(null);
             helper.assertTrue(recipe != null, "Recipe " + name + " not loaded");
             var ingredients = recipe.value().getIngredients();
+            // Exactly the expected HomeCore components: no leftover board or wrong module.
             for (var component : components) {
-                helper.assertTrue(ingredients.stream().anyMatch(ingredient -> ingredient.test(new ItemStack(component))),
-                        name + " does not use " + BuiltInRegistries.ITEM.getKey(component));
+                boolean present = ingredients.stream().anyMatch(ingredient -> ingredient.test(new ItemStack(component)));
+                helper.assertTrue(present == used.contains(component), name + (present ? " uses " : " does not use ")
+                        + BuiltInRegistries.ITEM.getKey(component));
             }
             helper.assertTrue(recipe.value().getResultItem(helper.getLevel().registryAccess()).is(BuiltInRegistries.ITEM.get(HomeLinkFarm.id(name))),
                     name + " makes something else");

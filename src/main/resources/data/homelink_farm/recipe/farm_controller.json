@@ -4,7 +4,7 @@
   "pattern": [
     "IGI",
     "CMC",
-    "IWI"
+    "IXI"
   ],
   "key": {
     "I": {
@@ -19,8 +19,8 @@
     "M": {
       "item": "homecore:homelink_microprocessor"
     },
-    "W": {
-      "tag": "c:crops/wheat"
+    "X": {
+      "item": "homecore:homelink_communication_module"
     }
   },
   "result": {

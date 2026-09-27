@@ -14,7 +14,7 @@
       "tag": "c:glass_panes"
     },
     "B": {
-      "item": "homecore:homelink_circuit_board"
+      "item": "homecore:homelink_communication_module"
     },
     "S": {
       "tag": "c:seeds"

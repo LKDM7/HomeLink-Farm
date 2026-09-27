@@ -20,7 +20,7 @@
       "item": "minecraft:piston"
     },
     "B": {
-      "item": "homecore:homelink_circuit_board"
+      "item": "homecore:homelink_control_module"
     }
   },
   "result": {
