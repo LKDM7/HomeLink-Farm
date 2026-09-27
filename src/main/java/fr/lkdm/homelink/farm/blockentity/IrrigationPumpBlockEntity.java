@@ -162,6 +162,26 @@ public class IrrigationPumpBlockEntity extends AbstractFarmDeviceBlockEntity
         updateNow = true;
     }
 
+    /**
+     * A redstone signal within one block of the pump, diagonals included: the pump powered on a face,
+     * or any block of the surrounding 3x3x3 cube emitting a signal or strongly powered.
+     */
+    public static boolean hasSignalNearby(Level level, BlockPos pos) {
+        if (level.hasNeighborSignal(pos)) return true;
+        for (BlockPos near : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
+            if (near.equals(pos) || !level.isLoaded(near)) continue;
+            BlockState state = level.getBlockState(near);
+            if (state.isSignalSource()) {
+                for (Direction direction : Direction.values()) {
+                    if (state.getSignal(level, near, direction) > 0) return true;
+                }
+            } else if (level.getDirectSignalTo(near) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** A real water source (including a waterlogged block) on any face, or the pump itself submerged. */
     public static boolean hasAdjacentWaterSource(Level level, BlockPos pos) {
         FluidState own = level.getFluidState(pos);
@@ -186,7 +206,7 @@ public class IrrigationPumpBlockEntity extends AbstractFarmDeviceBlockEntity
         updateNow = false;
         if (waterDirty || scheduled) {
             water = hasAdjacentWaterSource(level, getBlockPos());
-            powered = level.hasNeighborSignal(getBlockPos());
+            powered = hasSignalNearby(level, getBlockPos());
             waterDirty = false;
         }
         IrrigationManager manager = IrrigationManager.get(level);

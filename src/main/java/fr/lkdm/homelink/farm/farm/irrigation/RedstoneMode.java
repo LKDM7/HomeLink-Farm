@@ -3,7 +3,7 @@ package fr.lkdm.homelink.farm.farm.irrigation;
 import java.util.Locale;
 import net.minecraft.network.chat.Component;
 
-/** How an Irrigation Pump reacts to a redstone signal on any of its faces. */
+/** How an Irrigation Pump reacts to a redstone signal within one block of it, diagonals included. */
 public enum RedstoneMode {
     /** Redstone has no effect (default). */
     IGNORED,

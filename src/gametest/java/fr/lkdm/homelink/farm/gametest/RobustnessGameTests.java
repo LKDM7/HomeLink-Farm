@@ -102,6 +102,28 @@ public final class RobustnessGameTests {
                 .thenSucceed();
     }
 
+    @GameTest(template = "field", timeoutTicks = 300)
+    public static void pumpSensesRedstoneWithinOneBlock(GameTestHelper helper) {
+        buildLine(helper, 1, true);
+        IrrigationPumpBlockEntity pump = pump(helper, PUMP);
+        pump.setRedstoneMode(RedstoneMode.RUN_WHEN_POWERED);
+        BlockPos far = PUMP.above(2);
+        BlockPos diagonal = PUMP.north().west();
+        helper.setBlock(far, Blocks.REDSTONE_BLOCK);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(pump.snapshot().status() == PumpStatus.REDSTONE_STOPPED, "Signal two blocks away powered the pump"))
+                .thenIdle(IrrigationPumpBlockEntity.UPDATE_INTERVAL * 2)
+                .thenExecute(() -> {
+                    helper.assertTrue(pump.snapshot().status() == PumpStatus.REDSTONE_STOPPED, "Signal two blocks away powered the pump");
+                    helper.destroyBlock(far);
+                    helper.setBlock(diagonal, Blocks.REDSTONE_BLOCK);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(pump.snapshot().status() == PumpStatus.ACTIVE, "Diagonal signal did not start the pump"))
+                .thenExecute(() -> helper.destroyBlock(diagonal))
+                .thenWaitUntil(() -> helper.assertTrue(pump.snapshot().status() == PumpStatus.REDSTONE_STOPPED, "Pump kept running without signal"))
+                .thenSucceed();
+    }
+
     @GameTest(template = "large", timeoutTicks = 400)
     public static void severalFarmsStayIndependent(GameTestHelper helper) {
         int[] sprinklersPerFarm = {2, 5, 6};
