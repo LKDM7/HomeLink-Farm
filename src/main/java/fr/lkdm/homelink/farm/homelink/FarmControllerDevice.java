@@ -32,7 +32,7 @@ import net.minecraft.world.level.Level;
  * kept stable; {@link #refresh} updates values (HomeCore only sends changed revisions) and
  * publishes transition events.
  */
-public final class FarmControllerDevice implements DashboardDevice {
+public final class FarmControllerDevice implements DashboardDevice, FarmNetworkMember {
     public static final ResourceLocation TYPE = FarmIds.FARM_CONTROLLER;
     /** crop_ready fires when this share of crops is mature. */
     public static final float CROP_READY_THRESHOLD = 0.90F;
@@ -92,6 +92,7 @@ public final class FarmControllerDevice implements DashboardDevice {
     @Override public UUID id() { return identity; }
     @Override public ResourceLocation deviceType() { return TYPE; }
     @Override public Component displayName() { return source.displayName().copy(); }
+    @Override public Object source() { return source; }
     @Override public List<DeviceMetric<?>> metrics() { return metrics; }
     @Override public List<DeviceAction<?>> actions() { return actions; }
     @Override public Set<ResourceLocation> eventTypes() { return FarmIds.CONTROLLER_EVENTS; }

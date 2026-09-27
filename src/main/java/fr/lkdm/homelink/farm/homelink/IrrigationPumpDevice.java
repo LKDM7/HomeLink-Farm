@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
  * HomeCore device of an Irrigation Pump: hydraulic metrics, the {@code enabled} toggle
  * action (executed only through HomeCore's authorized gateway) and transition events.
  */
-public final class IrrigationPumpDevice implements DashboardDevice {
+public final class IrrigationPumpDevice implements DashboardDevice, FarmNetworkMember {
     public static final ResourceLocation TYPE = FarmIds.IRRIGATION_PUMP;
 
     private final PumpView source;
@@ -85,6 +85,7 @@ public final class IrrigationPumpDevice implements DashboardDevice {
     @Override public UUID id() { return identity; }
     @Override public ResourceLocation deviceType() { return TYPE; }
     @Override public Component displayName() { return source.displayName().copy(); }
+    @Override public Object source() { return source; }
     @Override public List<DeviceMetric<?>> metrics() { return metrics; }
     @Override public List<DeviceAction<?>> actions() { return actions; }
     @Override public Set<ResourceLocation> eventTypes() { return FarmIds.PUMP_EVENTS; }

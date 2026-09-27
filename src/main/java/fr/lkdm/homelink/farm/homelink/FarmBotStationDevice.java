@@ -33,7 +33,7 @@ import net.minecraft.world.level.Level;
  * the station output, the START / PAUSE / RETURN HOME buttons (executed only through HomeCore's
  * authorized gateway) and transition events.
  */
-public final class FarmBotStationDevice implements DashboardDevice {
+public final class FarmBotStationDevice implements DashboardDevice, FarmNetworkMember {
     public static final ResourceLocation TYPE = FarmIds.FARMBOT_STATION;
 
     private final FarmBotStationView source;
@@ -106,6 +106,7 @@ public final class FarmBotStationDevice implements DashboardDevice {
     @Override public UUID id() { return identity; }
     @Override public ResourceLocation deviceType() { return TYPE; }
     @Override public Component displayName() { return source.displayName().copy(); }
+    @Override public Object source() { return source; }
     @Override public List<DeviceMetric<?>> metrics() { return metrics; }
     @Override public List<DeviceAction<?>> actions() { return actions; }
     @Override public Set<ResourceLocation> eventTypes() { return FarmIds.FARMBOT_EVENTS; }

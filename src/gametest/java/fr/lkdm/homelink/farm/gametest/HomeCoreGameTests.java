@@ -123,6 +123,40 @@ public final class HomeCoreGameTests {
         helper.succeed();
     }
 
+    /** The Dashboard moves machines through HomeCore's NetworkMember contract; the block must record the same binding. */
+    @GameTest(template = "field")
+    public static void dashboardBindingKeepsTheControllerInStep(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(2, 2, 2), ModBlocks.FARM_CONTROLLER.get());
+        FarmControllerBlockEntity controller = helper.getBlockEntity(new BlockPos(2, 2, 2));
+        ServerPlayer owner = player(helper, "member_owner");
+        ServerPlayer stranger = player(helper, "member_stranger");
+        controller.setOwner(owner.getUUID(), "member_owner");
+        // The controller registers with HomeCore from onLoad, a few ticks after placement.
+        helper.runAfterDelay(5, () -> dashboardBinding(helper, controller, owner, stranger));
+    }
+
+    private static void dashboardBinding(GameTestHelper helper, FarmControllerBlockEntity controller, ServerPlayer owner, ServerPlayer stranger) {
+        var networks = DashboardAPI.networks(helper.getLevel().getServer());
+        var first = networks.createNetwork("Base", owner.getUUID());
+        var second = networks.createNetwork("Atelier", owner.getUUID());
+        try {
+            var device = DashboardAPI.devices(helper.getLevel().getServer()).get(controller.deviceId()).orElse(null);
+            helper.assertTrue(device != null, "Controller not registered in HomeCore");
+            helper.assertTrue(device instanceof fr.lkdm.homecore.api.network.NetworkMember, "The controller must implement NetworkMember");
+            helper.assertTrue(DashboardAPI.bindDevice(stranger, device, Optional.of(first.id())) == fr.lkdm.homecore.api.network.NetworkMember.BindResult.DENIED,
+                    "A stranger moved someone else's controller");
+            helper.assertTrue(DashboardAPI.bindDevice(owner, device, Optional.of(first.id())) == fr.lkdm.homecore.api.network.NetworkMember.BindResult.BOUND
+                    && controller.homeNetwork().equals(Optional.of(first.id())) && controller.homeNetworkName().equals("Base"), "Owner binding not recorded");
+            helper.assertTrue(DashboardAPI.bindDevice(owner, device, Optional.of(second.id())) == fr.lkdm.homecore.api.network.NetworkMember.BindResult.BOUND
+                    && !networks.getDevices(first.id()).contains(controller.deviceId()) && networks.getDevices(second.id()).contains(controller.deviceId())
+                    && controller.homeNetwork().equals(Optional.of(second.id())), "Moving must leave the previous network");
+            helper.succeed();
+        } finally {
+            networks.deleteNetwork(first.id());
+            networks.deleteNetwork(second.id());
+        }
+    }
+
     @GameTest(template = "field", timeoutTicks = 500)
     public static void pumpEventsAreTransitionsNotSpam(GameTestHelper helper) {
         buildLine(helper, 5, true);
