@@ -1,5 +1,6 @@
 package fr.lkdm.homelink.farm.homelink;
 
+import fr.lkdm.homecore.api.action.StandardActions;
 import fr.lkdm.homelink.farm.HomeLinkFarm;
 import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
@@ -43,7 +44,8 @@ public final class FarmIds {
     public static final ResourceLocation STATION_OUTPUT_USAGE = HomeLinkFarm.id("station_output_usage");
 
     // Actions
-    public static final ResourceLocation ACTION_ENABLED = ENABLED;
+    /** Pump on/off: HomeCore's standard power toggle. */
+    public static final ResourceLocation ACTION_ENABLED = StandardActions.POWER;
     public static final ResourceLocation ACTION_RESCAN = HomeLinkFarm.id("rescan");
     public static final ResourceLocation ACTION_START = HomeLinkFarm.id("start");
     public static final ResourceLocation ACTION_PAUSE = HomeLinkFarm.id("pause");

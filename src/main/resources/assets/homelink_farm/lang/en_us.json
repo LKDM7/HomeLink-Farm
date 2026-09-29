@@ -128,8 +128,6 @@
   "key.categories.homelink_farm": "HomeLink Farm",
   "action.homelink_farm.rescan": "Rescan crops",
   "action.homelink_farm.rescan.description": "Start a new scan of every linked Crop Monitor.",
-  "action.homelink_farm.enabled": "Pump enabled",
-  "action.homelink_farm.enabled.description": "Turn the irrigation pump on or off.",
   "status.homelink_farm.problems": "%s problem(s)",
   "gui.homelink_farm.network": "HomeLink: %s",
   "gui.homelink_farm.network.none": "no network",

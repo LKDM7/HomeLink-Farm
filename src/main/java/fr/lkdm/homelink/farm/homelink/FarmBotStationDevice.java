@@ -5,6 +5,8 @@ import fr.lkdm.homecore.api.action.DeviceAction;
 import fr.lkdm.homecore.api.device.DashboardDevice;
 import fr.lkdm.homecore.api.device.DeviceSchema;
 import fr.lkdm.homecore.api.device.DeviceStatus;
+import fr.lkdm.homecore.api.device.Renamable;
+import fr.lkdm.homecore.api.device.Switchable;
 import fr.lkdm.homecore.api.event.DeviceEvent;
 import fr.lkdm.homecore.api.metric.DeviceMetric;
 import fr.lkdm.homecore.api.metric.MetricTypes;
@@ -33,7 +35,7 @@ import net.minecraft.world.level.Level;
  * the station output, the START / PAUSE / RETURN HOME buttons (executed only through HomeCore's
  * authorized gateway) and transition events.
  */
-public final class FarmBotStationDevice implements DashboardDevice, FarmNetworkMember {
+public final class FarmBotStationDevice implements DashboardDevice, FarmNetworkMember, Renamable, Switchable {
     public static final ResourceLocation TYPE = FarmIds.FARMBOT_STATION;
 
     private final FarmBotStationView source;
@@ -106,6 +108,10 @@ public final class FarmBotStationDevice implements DashboardDevice, FarmNetworkM
     @Override public UUID id() { return identity; }
     @Override public ResourceLocation deviceType() { return TYPE; }
     @Override public Component displayName() { return source.displayName().copy(); }
+    @Override public ActionResult rename(String name) { source.setCustomName(name); return ActionResult.success(); }
+    /** Same state as the Start and Pause buttons. */
+    @Override public boolean powered() { return source.working(); }
+    @Override public ActionResult setPowered(boolean powered) { source.setWorking(powered); return ActionResult.success(); }
     @Override public Object source() { return source; }
     @Override public List<DeviceMetric<?>> metrics() { return metrics; }
     @Override public List<DeviceAction<?>> actions() { return actions; }

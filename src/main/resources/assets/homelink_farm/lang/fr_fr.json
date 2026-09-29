@@ -128,8 +128,6 @@
   "key.categories.homelink_farm": "HomeLink Farm",
   "action.homelink_farm.rescan": "Réanalyser les cultures",
   "action.homelink_farm.rescan.description": "Lance une nouvelle analyse de chaque Moniteur relié.",
-  "action.homelink_farm.enabled": "Pompe activée",
-  "action.homelink_farm.enabled.description": "Active ou désactive la pompe d'irrigation.",
   "status.homelink_farm.problems": "%s problème(s)",
   "gui.homelink_farm.network": "HomeLink : %s",
   "gui.homelink_farm.network.none": "aucun réseau",

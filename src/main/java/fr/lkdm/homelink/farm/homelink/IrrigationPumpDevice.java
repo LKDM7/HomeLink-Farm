@@ -5,11 +5,12 @@ import fr.lkdm.homecore.api.action.DeviceAction;
 import fr.lkdm.homecore.api.device.DashboardDevice;
 import fr.lkdm.homecore.api.device.DeviceSchema;
 import fr.lkdm.homecore.api.device.DeviceStatus;
+import fr.lkdm.homecore.api.device.Renamable;
+import fr.lkdm.homecore.api.device.Switchable;
 import fr.lkdm.homecore.api.event.DeviceEvent;
 import fr.lkdm.homecore.api.metric.DeviceMetric;
 import fr.lkdm.homecore.api.metric.MetricTypes;
 import fr.lkdm.homecore.api.metric.UpdatePolicy;
-import fr.lkdm.homecore.api.security.Permission;
 import fr.lkdm.homelink.farm.farm.irrigation.PumpSnapshot;
 import fr.lkdm.homelink.farm.farm.irrigation.PumpStatus;
 import java.time.Instant;
@@ -26,10 +27,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 /**
- * HomeCore device of an Irrigation Pump: hydraulic metrics, the {@code enabled} toggle
- * action (executed only through HomeCore's authorized gateway) and transition events.
+ * HomeCore device of an Irrigation Pump: hydraulic metrics, the standard power and rename
+ * actions (executed only through HomeCore's authorized gateway) and transition events.
  */
-public final class IrrigationPumpDevice implements DashboardDevice, FarmNetworkMember {
+public final class IrrigationPumpDevice implements DashboardDevice, FarmNetworkMember, Renamable, Switchable {
     public static final ResourceLocation TYPE = FarmIds.IRRIGATION_PUMP;
 
     private final PumpView source;
@@ -56,13 +57,8 @@ public final class IrrigationPumpDevice implements DashboardDevice, FarmNetworkM
         this.identity = Objects.requireNonNull(source.deviceId(), "deviceId");
         this.events = Objects.requireNonNull(events, "events");
         this.tracker = new TransitionTracker(identity);
-        this.actions = List.of(DeviceAction.toggle(FarmIds.ACTION_ENABLED, Component.translatableWithFallback("action.homelink_farm.enabled", "Pump enabled"))
-                .description(Component.translatableWithFallback("action.homelink_farm.enabled.description", "Turn the irrigation pump on or off."))
-                .requiredPermission(Permission.CONTROL.id())
-                .handler((context, value) -> {
-                    source.setEnabled(value);
-                    return ActionResult.success();
-                }).build());
+        // The on/off switch is HomeCore's standard power action, from Switchable.
+        this.actions = List.of();
         this.schema = DeviceSchema.from(this);
         enabled.setValue(source.enabled());
     }
@@ -85,6 +81,9 @@ public final class IrrigationPumpDevice implements DashboardDevice, FarmNetworkM
     @Override public UUID id() { return identity; }
     @Override public ResourceLocation deviceType() { return TYPE; }
     @Override public Component displayName() { return source.displayName().copy(); }
+    @Override public ActionResult rename(String name) { source.setCustomName(name); return ActionResult.success(); }
+    @Override public boolean powered() { return source.enabled(); }
+    @Override public ActionResult setPowered(boolean powered) { source.setEnabled(powered); return ActionResult.success(); }
     @Override public Object source() { return source; }
     @Override public List<DeviceMetric<?>> metrics() { return metrics; }
     @Override public List<DeviceAction<?>> actions() { return actions; }

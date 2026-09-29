@@ -5,6 +5,7 @@ import fr.lkdm.homecore.api.action.DeviceAction;
 import fr.lkdm.homecore.api.device.DashboardDevice;
 import fr.lkdm.homecore.api.device.DeviceSchema;
 import fr.lkdm.homecore.api.device.DeviceStatus;
+import fr.lkdm.homecore.api.device.Renamable;
 import fr.lkdm.homecore.api.event.DeviceEvent;
 import fr.lkdm.homecore.api.metric.DeviceMetric;
 import fr.lkdm.homecore.api.metric.MetricTypes;
@@ -32,7 +33,7 @@ import net.minecraft.world.level.Level;
  * kept stable; {@link #refresh} updates values (HomeCore only sends changed revisions) and
  * publishes transition events.
  */
-public final class FarmControllerDevice implements DashboardDevice, FarmNetworkMember {
+public final class FarmControllerDevice implements DashboardDevice, FarmNetworkMember, Renamable {
     public static final ResourceLocation TYPE = FarmIds.FARM_CONTROLLER;
     /** crop_ready fires when this share of crops is mature. */
     public static final float CROP_READY_THRESHOLD = 0.90F;
@@ -92,6 +93,7 @@ public final class FarmControllerDevice implements DashboardDevice, FarmNetworkM
     @Override public UUID id() { return identity; }
     @Override public ResourceLocation deviceType() { return TYPE; }
     @Override public Component displayName() { return source.displayName().copy(); }
+    @Override public ActionResult rename(String name) { source.setCustomName(name); return ActionResult.success(); }
     @Override public Object source() { return source; }
     @Override public List<DeviceMetric<?>> metrics() { return metrics; }
     @Override public List<DeviceAction<?>> actions() { return actions; }

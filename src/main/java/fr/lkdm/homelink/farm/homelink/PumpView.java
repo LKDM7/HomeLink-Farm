@@ -14,6 +14,9 @@ public interface PumpView {
 
     Component displayName();
 
+    /** @param name name chosen by a player; empty restores the default name */
+    void setCustomName(String name);
+
     boolean isOperational();
 
     Optional<BlockPos> devicePosition();

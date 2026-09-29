@@ -34,6 +34,7 @@ class FarmControllerDeviceTest {
 
         @Override public UUID deviceId() { return id; }
         @Override public Component displayName() { return Component.literal(name); }
+        @Override public void setCustomName(String value) { name = value.isEmpty() ? "Farm Controller" : value; }
         @Override public boolean isOperational() { return operational; }
         @Override public Optional<BlockPos> devicePosition() { return Optional.of(new BlockPos(1, 2, 3)); }
         @Override public Optional<ResourceKey<Level>> deviceDimension() { return Optional.of(Level.OVERWORLD); }
@@ -58,6 +59,9 @@ class FarmControllerDeviceTest {
         assertEquals(FarmIds.FARM_CONTROLLER, device.deviceType());
         assertEquals(DeviceStatus.State.ONLINE, device.status().state());
         assertEquals("Main Farm", device.displayName().getString());
+        assertTrue(device.schema().actions().stream().anyMatch(action -> action.id().equals(fr.lkdm.homecore.api.action.StandardActions.RENAME)));
+        assertTrue(device.rename("North field").isSuccess());
+        assertEquals("North field", device.displayName().getString());
         assertEquals(1, registry.findByType(FarmIds.FARM_CONTROLLER).size());
         assertTrue(device.schema().metrics().stream().anyMatch(metric -> metric.id().equals(FarmIds.CROP_COUNT)));
         assertTrue(device.schema().events().containsAll(List.of(FarmIds.CROP_READY, FarmIds.PROBLEM_DETECTED)));
