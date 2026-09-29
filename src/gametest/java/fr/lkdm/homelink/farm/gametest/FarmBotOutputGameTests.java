@@ -15,9 +15,9 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * The station empties its output into an adjacent storage input (block tag
- * {@code homelink_farm:farmbot_station_outputs}). HomeLink Storage is not loaded here: the
- * GameTest mod adds the vanilla dropper to that tag to stand in for the Deposit.
+ * La station vide sa sortie vers un port HomeCore INPUT adjacent. Ce test isolé utilise
+ * un dropper auquel le mod GameTest attribue la capacité INPUT. Les tests inter-mods
+ * du harnais HomeCore chargent le vrai Storage Deposit.
  */
 @GameTestHolder(HomeLinkFarmGameTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)

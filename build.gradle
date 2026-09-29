@@ -9,8 +9,27 @@ version = mod_version
 group = mod_group_id
 
 repositories {
-    // HomeCore is consumed from Maven local (./gradlew publishToMavenLocal in the HomeCore repository).
-    mavenLocal()
+    maven {
+        name = 'HomeCorePackages'
+        url = uri('https://maven.pkg.github.com/LKDM7/HomeCore')
+        credentials {
+            username = providers.gradleProperty('githubUser').orElse(providers.environmentVariable('GITHUB_ACTOR')).getOrElse('')
+            password = providers.gradleProperty('githubToken').orElse(providers.environmentVariable('HOMELINK_PACKAGES_TOKEN')).orElse(providers.environmentVariable('GITHUB_TOKEN')).getOrElse('')
+        }
+        content { includeGroup 'fr.lkdm.homecore' }
+    }
+
+    maven {
+        name = 'EnergyPackages'
+        url = uri('https://maven.pkg.github.com/LKDM7/HomeLink-Energy')
+        credentials {
+            username = providers.gradleProperty('githubUser').orElse(providers.environmentVariable('GITHUB_ACTOR')).getOrElse('')
+            password = providers.gradleProperty('githubToken').orElse(providers.environmentVariable('HOMELINK_PACKAGES_TOKEN')).orElse(providers.environmentVariable('GITHUB_TOKEN')).getOrElse('')
+        }
+        content { includeGroup 'fr.lkdm.homelink.energy' }
+    }
+
+
     mavenCentral()
 }
 
@@ -207,3 +226,37 @@ idea {
         downloadJavadoc = true
     }
 }
+
+if (providers.gradleProperty('withStorage').isPresent()) {
+    dependencies { runtimeOnly 'fr.lkdm.homelink.storage:homelink_storage:1.1.0' }
+}
+
+def releaseJarForVerification = tasks.named('jar', Jar).flatMap { it.archiveFile }
+def versionForVerification = providers.gradleProperty('mod_version').get()
+def coreRangeForVerification = providers.gradleProperty('homecore_version_range').get()
+def energyRangeForVerification = providers.gradleProperty('energy_version_range').get()
+tasks.register('verifyReleaseJar') {
+    group = 'verification'
+    dependsOn tasks.named('jar')
+    inputs.file(releaseJarForVerification)
+    doLast {
+        new java.util.zip.ZipFile(releaseJarForVerification.get().asFile).withCloseable { archive ->
+            def names = archive.entries().collect { it.name }
+            if (names.any { it.startsWith('fr/lkdm/homecore/') || it.contains('/gametest/') || it.startsWith('data/homelink_farm_gametest/') || it.startsWith('org/junit/') }) {
+                throw new GradleException('Dependency or test content found in release JAR.')
+            }
+            ['fr/lkdm/homelink/farm/HomeLinkFarm.class', 'META-INF/neoforge.mods.toml', 'META-INF/LICENSE',
+             'assets/homelink_farm/lang/en_us.json', 'assets/homelink_farm/lang/fr_fr.json'].each { entry ->
+                if (!names.contains(entry)) throw new GradleException("Missing release entry: ${entry}")
+            }
+            def metadata = archive.getInputStream(archive.getEntry('META-INF/neoforge.mods.toml')).withCloseable { it.getText('UTF-8') }
+            if (metadata.contains('${') || !metadata.contains('version = "' + versionForVerification + '"')
+                    || !metadata.contains('versionRange = "' + coreRangeForVerification + '"')
+                    || !metadata.contains('versionRange = "' + energyRangeForVerification + '"')) {
+                throw new GradleException('Release identity or dependency metadata mismatch.')
+            }
+        }
+    }
+}
+tasks.named('check') { dependsOn tasks.named('verifyReleaseJar'), tasks.named('gametestClasses') }
+tasks.withType(Jar).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }

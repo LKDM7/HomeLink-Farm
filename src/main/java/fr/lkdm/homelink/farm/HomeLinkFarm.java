@@ -59,6 +59,8 @@ public final class HomeLinkFarm {
     /** Every powered machine takes HE on all faces through the shared HomeCore energy capability. */
     private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
         var port = fr.lkdm.homecore.api.energy.EnergyApi.BLOCK;
+        event.registerBlockEntity(fr.lkdm.homecore.api.item.ItemApi.BLOCK, ModBlockEntities.FARMBOT_STATION.get(),
+                (device, side) -> fr.lkdm.homecore.api.item.ItemApi.of(device.output(), fr.lkdm.homecore.api.item.ItemPortType.OUTPUT));
         event.registerBlockEntity(port, ModBlockEntities.IRRIGATION_PUMP.get(), (device, side) -> device.energyPort());
         event.registerBlockEntity(port, ModBlockEntities.CROP_MONITOR.get(), (device, side) -> device.energyPort());
         event.registerBlockEntity(port, ModBlockEntities.FARM_CONTROLLER.get(), (device, side) -> device.energyPort());

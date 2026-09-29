@@ -1,8 +1,8 @@
-# HomeLink Farm 1.1.0
+# HomeLink Farm 1.2.0
 
 Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer, optimiser et connecter une exploitation Minecraft. Aucune ressource n'est jamais créée ; seul le **FarmBot**, un robot que le joueur fabrique et installe, récolte et replante, en se déplaçant réellement jusqu'aux cultures.
 
-**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.7.0+ (obligatoire).**
+**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.10.0+ (obligatoire).**
 
 ```text
 Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +20 % de croissance
@@ -11,13 +11,13 @@ Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replant
 
 ## Installation
 
-1. Installer **HomeCore 1.9.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.2.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
-2. Installer `homelink_farm-1.1.0.jar` dans `mods` côté client et serveur.
+1. Installer **HomeCore 1.10.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.2.2** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
+2. Installer `homelink_farm-1.2.0.jar` dans `mods` côté client et serveur.
 
-Compilation depuis les sources (JDK 21) : publier d'abord HomeCore dans le Maven local (`./gradlew.bat publishToMavenLocal` dans le dépôt HomeCore), puis :
+Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.10.0 et HomeLink Energy 0.2.2 à côté du projet et activer les composites locaux :
 
 ```powershell
-./gradlew.bat build          # JAR dans build/libs + tests JUnit
+./gradlew.bat -PuseLocalDependencies=true build          # JAR dans build/libs + tests JUnit
 ```
 
 ## Blocs et objets
@@ -46,7 +46,7 @@ Chaque écran de machine possède un bouton **?** dans son en-tête. Il ouvre un
 
 En tenant le connecteur, le contrôleur sélectionné est entouré en vert et la zone en cours de sélection s'affiche en doré, de A jusqu'au bloc visé puis jusqu'à B.
 
-Toute la logique passe par `FarmLinkService` (serveur) : un futur connecteur universel HomeLink pourra le remplacer sans changer les blocs.
+Le Farm Connector conserve les associations agricoles et la sélection des zones via `FarmLinkService`. Le HomeLink Connector de HomeCore sert au rattachement commun à un HomeNetwork via `DashboardAPI.bindDevice()` ; il ne remplace pas les fonctions agricoles particulières.
 
 Un Crop Monitor posé surveille par défaut **tout son chunk** : 16 × 16 blocs, du bas du monde jusqu'à la limite de construction (16 × 384 × 16 dans l'Overworld). Cette zone, construite par le serveur autour du moniteur, échappe aux limites de volume et de distance des zones tracées au Farm Connector ; son analyse reste étalée par le budget par tick (environ 10 s par passe). Son écran propose aussi *Zone 16×16*, *Effacer*, *Rescanner*, *Diagnostic / Localiser*, *Voir l'irrigation*, *Voir zone* (contour cyan de la zone pendant 10 s) et le mode comparateur. Chaque objet décrit son rôle dans son infobulle.
 

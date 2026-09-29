@@ -4,7 +4,6 @@ import fr.lkdm.homecore.api.DashboardAPI;
 import fr.lkdm.homecore.api.network.HomeNetwork;
 import fr.lkdm.homecore.api.security.Permission;
 import fr.lkdm.homelink.farm.blockentity.AbstractFarmDeviceBlockEntity;
-import fr.lkdm.homelink.farm.farm.FarmAccess;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,27 +31,16 @@ public final class HomeNetworkBinding {
 
     public static Result bind(ServerPlayer player, AbstractFarmDeviceBlockEntity device, Optional<UUID> target) {
         if (!device.exposedToHomeCore()) return Result.NOT_SUPPORTED;
-        if (!FarmAccess.canManage(player, device)) return Result.DENIED;
-        Optional<UUID> current = device.homeNetwork();
-        if (current.equals(target)) return Result.UNCHANGED;
-        var networks = DashboardAPI.networks(player.server);
-        Optional<HomeNetwork> destination = Optional.empty();
-        if (target.isPresent()) {
-            destination = networks.getNetwork(target.get());
-            if (destination.isEmpty()) return Result.UNKNOWN_NETWORK;
-            if (!DashboardAPI.hasPermission(player, target.get(), Permission.MANAGE_NETWORK)) return Result.DENIED;
-        }
-        if (current.isPresent() && networks.getNetwork(current.get()).isPresent()) {
-            if (!DashboardAPI.hasPermission(player, current.get(), Permission.MANAGE_NETWORK)) return Result.DENIED;
-            networks.removeDevice(current.get(), device.deviceId());
-        }
-        if (destination.isPresent()) {
-            networks.addDevice(destination.get().id(), device.deviceId());
-            device.setHomeNetwork(destination.get().id(), destination.get().name());
-            return Result.BOUND;
-        }
-        device.clearHomeNetwork();
-        return Result.UNBOUND;
+        var adapter = DashboardAPI.devices(player.server).get(device.deviceId())
+                .or(() -> DashboardAPI.providers().discover(device));
+        if (adapter.isEmpty()) return Result.DENIED;
+        return switch (DashboardAPI.bindDevice(player, adapter.get(), target)) {
+            case BOUND -> Result.BOUND;
+            case UNBOUND -> Result.UNBOUND;
+            case UNCHANGED -> Result.UNCHANGED;
+            case UNKNOWN_NETWORK -> Result.UNKNOWN_NETWORK;
+            case DENIED, NOT_SUPPORTED -> Result.DENIED;
+        };
     }
 
     /** A device block was destroyed: remove its identity from its network (trusted server call). */
