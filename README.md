@@ -1,8 +1,8 @@
-# HomeLink Farm 1.4.0
+# HomeLink Farm 1.5.0
 
 Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer, optimiser et connecter une exploitation Minecraft. Aucune ressource n'est jamais créée ; seul le **FarmBot**, un robot que le joueur fabrique et installe, récolte et replante, en se déplaçant réellement jusqu'aux cultures.
 
-**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.12.0+ (obligatoire).**
+**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.13.0+ (obligatoire).**
 
 ```text
 Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +33 % de croissance
@@ -11,10 +11,10 @@ Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replant
 
 ## Installation
 
-1. Installer **HomeCore 1.12.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.4.1** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
-2. Installer `homelink_farm-1.4.0.jar` dans `mods` côté client et serveur.
+1. Installer **HomeCore 1.13.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.5.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
+2. Installer `homelink_farm-1.5.0.jar` dans `mods` côté client et serveur.
 
-Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.12.0 et HomeLink Energy 0.4.1 à côté du projet et activer les composites locaux :
+Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.13.0 et HomeLink Energy 0.5.0 à côté du projet et activer les composites locaux :
 
 ```powershell
 ./gradlew.bat -PuseLocalDependencies=true build          # JAR dans build/libs + tests JUnit

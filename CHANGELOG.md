@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+- Compatibilité JEI et REI : Avec JEI (19.0 ou plus récent) ou REI (16.0 ou plus récent), chaque objet du mod a une page d'information (onglet « i » de JEI, « Information » de REI) qui explique son rôle, en français et en anglais. Les recettes de fabrication s'y affichent comme les autres. Ces deux mods restent facultatifs et côté client.
+- Requiert HomeCore 1.13.0 et HomeLink Energy 0.5.0.
+
 ## 1.4.0
 
 ### Protections de serveur

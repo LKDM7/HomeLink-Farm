@@ -31,6 +31,10 @@ repositories {
 
 
     mavenCentral()
+    maven { url = 'https://maven.blamejared.com/'; content { includeGroup 'mezz.jei'; includeGroup 'net.mezzdev.config' } }
+    maven { url = 'https://maven.shedaniel.me/'; content { includeGroup 'me.shedaniel'; includeGroup 'me.shedaniel.cloth' } }
+    maven { url = 'https://maven.architectury.dev/'; content { includeGroup 'dev.architectury' } }
+    maven { url = 'https://maven.fabricmc.net/'; content { includeGroup 'net.fabricmc' } }
 }
 
 base {
@@ -55,7 +59,20 @@ configurations {
     gametestRuntimeOnly.extendsFrom runtimeOnly
 }
 
+// JEI and REI are optional client integrations: compiled against their APIs, never embedded or required.
+// Pass -PwithJei or -PwithRei to load one of them in development runs.
+def withJei = providers.gradleProperty('withJei').isPresent()
+def withRei = providers.gradleProperty('withRei').isPresent()
 dependencies {
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    compileOnly "me.shedaniel:RoughlyEnoughItems-api-neoforge:${rei_version}"
+    // Information pages use REI's built-in display type, shipped in the full REI artifact.
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}") { transitive = false }
+    // REI annotates its API with net.fabricmc.api.Environment; only that annotation type is needed to compile.
+    compileOnly("net.fabricmc:fabric-loader:0.16.14") { transitive = false }
+    if (withJei) runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    if (withRei) runtimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
     implementation "fr.lkdm.homecore:homecore:${homecore_version}"
     // Required at runtime: machines only run on HE supplied by HomeLink Energy networks.
     runtimeOnly "fr.lkdm.homelink.energy:homelink_energy:${energy_version}"
@@ -143,6 +160,8 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
         neo_version_range      : neo_version_range,
         loader_version_range   : loader_version_range,
         homecore_version_range : homecore_version_range,
+        jei_version_range      : jei_version_range,
+        rei_version_range      : rei_version_range,
         energy_version_range   : energy_version_range,
         mod_id                 : mod_id,
         mod_name               : mod_name,
