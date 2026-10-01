@@ -1,36 +1,45 @@
-# Modifications non publiées
+# Changelog
 
-## Protections de serveur
+## 1.4.0
+
+### Protections de serveur
 
 - Le FarmBot demande l'autorisation de casser chaque culture (événement de casse) au nom du joueur qui l'a installé : les mods de protection (claims) appliquent ses droits. Une culture refusée n'est pas touchée et le robot l'ignore une minute, avec l'état « culture protégée ».
 
-## Irrigation
+### Irrigation
 
 - Le bonus de croissance de l'irrigation passe de **+20 %** à **+33 %** par défaut (`irrigation.irrigationGrowthBonus` = 0.33) : les cultures irriguées poussent 1,33 × plus vite en moyenne. Un fichier de config serveur déjà généré garde sa valeur.
 
-## Tuyaux et objet FarmBot
+### Dépendances
+
+- Requiert HomeCore 1.12.0 et HomeLink Energy 0.4.1.
+
+## Jusqu'à 1.3.0
+
+
+### Tuyaux et objet FarmBot
 
 - Les arroseurs éclairent comme une torche (niveau de lumière 14), quel que soit leur état : les cultures voisines ont assez de lumière pour pousser la nuit.
 - La recette de l'arroseur demande une poudre de glowstone (sous la grille en cuivre).
 - Les tuyaux non cirés s'oxydent désormais tout seuls à rythme régulier : environ **100 jours de jeu** de neuf à totalement oxydé (`irrigation.pipeOxidationDays`). L'oxydation vanilla s'arrêtait presque dans une ligne de tuyaux, car elle ralentit fortement près d'autre cuivre.
 - L'objet FarmBot affiche le vrai modèle 3D du robot, en main (première et troisième personne), dans l'inventaire, au sol et dans un cadre.
 
-## Farm Controller facultatif pour le FarmBot
+### Farm Controller facultatif pour le FarmBot
 
 - Sans Farm Controller, une FarmBot Station travaille avec le Crop Monitor le plus proche appartenant au même joueur, dans la portée de liaison ; *Moniteur* passe aux autres moniteurs proches.
 - Reliée à un Farm Controller, elle travaille sur **toute la ferme** (tous les Crop Monitors du contrôleur) ; *Moniteur* permet d'en épingler un seul. Le robot choisit la culture mûre la plus proche parmi tous ses moniteurs.
 - Le moniteur d'un autre joueur n'est jamais utilisé.
 
-## HomeCore 1.6.1 et recettes
+### HomeCore 1.6.1 et recettes
 
 - HomeLink Farm requiert désormais **HomeCore 1.6.1** (au lieu de 1.3.0).
 - Les appareils électroniques utilisent les composants communs de HomeCore : microprocesseur pour le Farm Controller et le FarmBot, circuit imprimé pour le Crop Monitor, l'Irrigation Pump, le FarmBot et sa station. Tuyaux, arroseurs et Farm Connector ne changent pas.
 
-## Crop Monitor
+### Crop Monitor
 
 - Zone par défaut étendue à **tout le chunk**, du bas du monde à la limite de construction (16 × 384 × 16 dans l'Overworld), à la pose comme avec *Zone 16×16*. Construite par le serveur autour du moniteur, elle n'est pas soumise aux limites des zones tracées au Farm Connector ; son analyse reste répartie par le budget par tick. Les moniteurs déjà posés gardent leur zone jusqu'au prochain *Zone 16×16*.
 
-## FarmBot
+### FarmBot
 
 - Nouvelle **FarmBot Station** : dock, chargeur, sortie de 9 emplacements et commandes START / PAUSE / RETURN HOME. Elle se relie au Farm Controller avec le Farm Connector et travaille avec le Crop Monitor de la ferme le plus proche (bouton *Moniteur* pour en changer).
 - Nouveau **FarmBot** : robot entité qui se déplace réellement jusqu'aux cultures mûres signalées par le Crop Monitor, les récolte, les replante avec une partie de la récolte, revient se vider et se recharger. Batterie interne (retour à 20 %), 9 emplacements, 15 états visibles sur son voyant et dans l'écran de la station.
@@ -46,7 +55,7 @@
 - Nom personnalisé d'une machine affiché en doré dans l'en-tête de son écran.
 - Bouton « Voir l'irrigation » doré tant que la vue est active (moniteur et pompe) ; la touche I fonctionne aussi dans ces écrans.
 
-## Modèles et matériaux
+### Modèles et matériaux
 
 - Tuyaux redessinés en conduites continues de quatre pixels, avec petits manchons aux jonctions ; formes de sélection assorties dans les six directions.
 
@@ -59,13 +68,13 @@
 - Tuyaux amincis entre leurs raccords en relief ; conservation des variantes oxydées et cirées.
 - Formes de sélection adaptées aux reliefs des appareils, et captures de contrôle rapprochées ajoutées au scénario client.
 
-## Fiabilité et performances
+### Fiabilité et performances
 
 - Invalidation des réseaux lors du chargement ou déchargement des chunks contenant uniquement des tuyaux, sans attendre la reconstruction de sécurité de 60 secondes.
 - Budget d'analyse limité aux positions restant à examiner, pour laisser davantage de place aux autres moniteurs.
 - Vérification du chargement du composant avant une tentative de liaison au contrôleur.
 
-## Interface
+### Interface
 
 - Aperçus des zones avec coins lumineux, pointillés animés et fondu ; diagnostics avec losange flottant à la place du grand faisceau.
 - Vue irrigation adaptée au relief et aux terrasses, contours réunis entre arroseurs, halos animés et croix sur les cultures non couvertes. Relevés du terrain mis en cache et répartis entre les ticks.
@@ -81,7 +90,7 @@
 - Actualisation des boutons de diagnostic uniquement quand les données changent, et mise à jour du mode comparateur en dehors du rendu.
 - Vue d'irrigation sans doublons entre moniteurs ; distance vérifiée sur chaque culture, y compris quand son moniteur se trouve hors du rayon d'affichage.
 
-## Vérification
+### Vérification
 
 - Tests de régression pour les petites zones, les notifications de chunks, la conservation des caches éloignés et le filtrage des cultures dans la vue d'irrigation.
 - Compilation, tests unitaires, GameTests serveur et scénario client complet en français.
