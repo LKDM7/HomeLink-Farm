@@ -11,10 +11,10 @@ Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replant
 
 ## Installation
 
-1. Installer **HomeCore 1.12.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.4.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
+1. Installer **HomeCore 1.12.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.4.1** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
 2. Installer `homelink_farm-1.3.0.jar` dans `mods` côté client et serveur.
 
-Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.12.0 et HomeLink Energy 0.4.0 à côté du projet et activer les composites locaux :
+Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.12.0 et HomeLink Energy 0.4.1 à côté du projet et activer les composites locaux :
 
 ```powershell
 ./gradlew.bat -PuseLocalDependencies=true build          # JAR dans build/libs + tests JUnit
