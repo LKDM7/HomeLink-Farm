@@ -1,10 +1,13 @@
 package fr.lkdm.homelink.farm.farm.bot;
 
+import com.mojang.authlib.GameProfile;
+import fr.lkdm.homelink.farm.entity.FarmBotEntity;
 import fr.lkdm.homelink.farm.farm.crop.CropAdapter;
 import fr.lkdm.homelink.farm.farm.crop.CropAdapters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -13,6 +16,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +29,9 @@ import org.jetbrains.annotations.Nullable;
  * already picked or is no longer mature is left alone.
  */
 public final class CropHarvester {
+    private static final String OPERATOR_NAME = "[HomeLink FarmBot]";
+    private static final GameProfile PROFILE = new GameProfile(UUID.fromString("6c2a9f0e-4d7b-4e3a-8f15-0b9d2e7c4a61"), OPERATOR_NAME);
+
     private CropHarvester() {
     }
 
@@ -41,6 +51,7 @@ public final class CropHarvester {
     public static Optional<List<ItemStack>> harvest(ServerLevel level, BlockPos pos, @Nullable Entity harvester, IItemHandler inventory) {
         if (!harvestable(level, pos)) return Optional.empty();
         BlockState state = level.getBlockState(pos);
+        if (!permitted(level, pos, state, harvester instanceof FarmBotEntity bot ? bot.ownerId() : null)) return Optional.empty();
         CropAdapter adapter = CropAdapters.get(state);
         List<ItemStack> drops = new ArrayList<>();
         for (ItemStack drop : adapter.harvestDrops(level, pos, state, harvester)) {
@@ -62,6 +73,16 @@ public final class CropHarvester {
         }
         drops.removeIf(ItemStack::isEmpty);
         return Optional.of(drops);
+    }
+
+    /**
+     * Asks protection mods whether the owner may break this crop, as a player would. The event is
+     * posted by a fake player carrying the owner's identity; a robot without an owner uses a shared one.
+     */
+    public static boolean permitted(ServerLevel level, BlockPos pos, BlockState state, @Nullable UUID owner) {
+        FakePlayer operator = FakePlayerFactory.get(level, owner == null ? PROFILE : new GameProfile(owner, OPERATOR_NAME));
+        operator.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+        return !NeoForge.EVENT_BUS.post(new BlockEvent.BreakEvent(level, pos, state, operator)).isCanceled();
     }
 
     private static boolean takeOne(List<ItemStack> stacks, ItemStack wanted) {

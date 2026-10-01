@@ -242,6 +242,7 @@
   "farmbot_fault.homelink_farm.dock_blocked": "dock blocked",
   "farmbot_fault.homelink_farm.home_unreachable": "station unreachable",
   "farmbot_fault.homelink_farm.target_unreachable": "target unreachable",
+  "farmbot_fault.homelink_farm.target_protected": "crop protected",
   "gui.homelink_farm.farmbot.none": "NO FARMBOT",
   "gui.homelink_farm.farmbot.insert": "Insert a FarmBot to begin.",
   "gui.homelink_farm.farmbot.robot": "FarmBot",

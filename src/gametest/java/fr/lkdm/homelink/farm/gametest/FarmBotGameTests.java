@@ -646,6 +646,39 @@ public final class FarmBotGameTests {
         helper.succeed();
     }
 
+    /** Position a simulated claim protects; null when no protection is active. */
+    private static volatile BlockPos protectedCrop;
+    private static volatile java.util.UUID protectedFor;
+    static {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.BlockEvent.BreakEvent event) -> {
+            if (event.getPos().equals(protectedCrop)) {
+                protectedFor = event.getPlayer().getUUID();
+                event.setCanceled(true);
+            }
+        });
+    }
+
+    @GameTest(template = "field", timeoutTicks = 40)
+    public static void protectionRefusingTheBreakLeavesTheCropUntouched(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos wheat = new BlockPos(2, 2, 2);
+        plant(helper, wheat, mature(Blocks.WHEAT));
+        java.util.UUID owner = java.util.UUID.randomUUID();
+        FarmBotEntity bot = new FarmBotEntity(ModEntities.FARMBOT.get(), level);
+        bot.assignStation(helper.absolutePos(new BlockPos(0, 2, 0)), java.util.UUID.randomUUID(), owner);
+        protectedCrop = helper.absolutePos(wheat);
+        try {
+            var result = fr.lkdm.homelink.farm.farm.bot.CropHarvester.harvest(level, protectedCrop, bot, new net.neoforged.neoforge.items.ItemStackHandler(9));
+            helper.assertTrue(result.isEmpty(), "Protected crop harvested");
+            helper.assertTrue(helper.getBlockState(wheat).equals(mature(Blocks.WHEAT)), "Protected crop changed");
+            helper.assertTrue(owner.equals(protectedFor), "Protection was not asked on behalf of the owner");
+        } finally {
+            protectedCrop = null;
+            protectedFor = null;
+        }
+        helper.succeed();
+    }
+
     // ----- Persistence and multiple robots ---------------------------------------------------
 
     @GameTest(template = "field", timeoutTicks = 100)

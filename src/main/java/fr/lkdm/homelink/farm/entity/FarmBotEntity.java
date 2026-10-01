@@ -121,6 +121,12 @@ public class FarmBotEntity extends PathfinderMob {
         this.owner = owner;
     }
 
+    /** Player who installed this robot, used to judge protections on their behalf. */
+    @Nullable
+    public UUID ownerId() {
+        return owner;
+    }
+
     @Nullable
     public BlockPos stationPos() {
         return stationPos;

@@ -1,5 +1,9 @@
 # Modifications non publiées
 
+## Protections de serveur
+
+- Le FarmBot demande l'autorisation de casser chaque culture (événement de casse) au nom du joueur qui l'a installé : les mods de protection (claims) appliquent ses droits. Une culture refusée n'est pas touchée et le robot l'ignore une minute, avec l'état « culture protégée ».
+
 ## Irrigation
 
 - Le bonus de croissance de l'irrigation passe de **+20 %** à **+33 %** par défaut (`irrigation.irrigationGrowthBonus` = 0.33) : les cultures irriguées poussent 1,33 × plus vite en moyenne. Un fichier de config serveur déjà généré garde sa valeur.

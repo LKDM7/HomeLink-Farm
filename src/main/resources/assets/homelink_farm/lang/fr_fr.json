@@ -242,6 +242,7 @@
   "farmbot_fault.homelink_farm.dock_blocked": "quai obstrué",
   "farmbot_fault.homelink_farm.home_unreachable": "station inaccessible",
   "farmbot_fault.homelink_farm.target_unreachable": "cible inaccessible",
+  "farmbot_fault.homelink_farm.target_protected": "culture protégée",
   "gui.homelink_farm.farmbot.none": "AUCUN FARMBOT",
   "gui.homelink_farm.farmbot.insert": "Installez un FarmBot pour commencer.",
   "gui.homelink_farm.farmbot.robot": "FarmBot",

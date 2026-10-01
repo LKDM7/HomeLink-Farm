@@ -19,7 +19,9 @@ public enum FarmBotFault {
     /** No path back to the station was found. */
     HOME_UNREACHABLE,
     /** The last target could not be reached and is ignored for a while. */
-    TARGET_UNREACHABLE;
+    TARGET_UNREACHABLE,
+    /** A protection (claim) refused the harvest for the owner: the crop is ignored for a while. */
+    TARGET_PROTECTED;
 
     public String serializedName() {
         return name().toLowerCase(Locale.ROOT);

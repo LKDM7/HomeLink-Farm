@@ -201,7 +201,7 @@ public final class FarmBotBrain {
         }
         bot.drainIdle();
         if (now < nextSearch) {
-            set(FarmBotState.SEARCHING, fault == FarmBotFault.TARGET_UNREACHABLE ? fault : FarmBotFault.NONE);
+            set(FarmBotState.SEARCHING, fault == FarmBotFault.TARGET_UNREACHABLE || fault == FarmBotFault.TARGET_PROTECTED ? fault : FarmBotFault.NONE);
             return;
         }
         nextSearch = now + FarmServerConfig.FARMBOT_SEARCH_COOLDOWN.get();
@@ -235,7 +235,7 @@ public final class FarmBotBrain {
             set(FarmBotState.HARVESTING, FarmBotFault.NONE);
             return;
         }
-        set(FarmBotState.MOVING, fault == FarmBotFault.TARGET_UNREACHABLE ? fault : FarmBotFault.NONE);
+        set(FarmBotState.MOVING, fault == FarmBotFault.TARGET_UNREACHABLE || fault == FarmBotFault.TARGET_PROTECTED ? fault : FarmBotFault.NONE);
         if (!navigate(target, now)) failTarget(level, now);
     }
 
@@ -243,7 +243,15 @@ public final class FarmBotBrain {
         BlockPos pos = target;
         dropTarget(level);
         if (pos != null) {
-            CropHarvester.harvest(level, pos, bot, bot.inventory()).ifPresent(items -> store(level, pos, items));
+            var harvested = CropHarvester.harvest(level, pos, bot, bot.inventory());
+            harvested.ifPresent(items -> store(level, pos, items));
+            // Still mature after a refused harvest: a protection denied it, so stop retrying that crop.
+            if (harvested.isEmpty() && CropHarvester.harvestable(level, pos)) {
+                unreachable.put(pos, now + UNREACHABLE_TICKS);
+                nextSearch = now;
+                set(FarmBotState.SEARCHING, FarmBotFault.TARGET_PROTECTED);
+                return;
+            }
         }
         fault = FarmBotFault.NONE;
         nextSearch = now;
@@ -379,7 +387,7 @@ public final class FarmBotBrain {
         nextTargetCheck = now + TARGET_CHECK_INTERVAL;
         progressFrom = null;
         FarmBotClaims.claim(level, pos, bot.getUUID(), CLAIM_TICKS);
-        set(FarmBotState.MOVING, fault == FarmBotFault.TARGET_UNREACHABLE ? fault : FarmBotFault.NONE);
+        set(FarmBotState.MOVING, fault == FarmBotFault.TARGET_UNREACHABLE || fault == FarmBotFault.TARGET_PROTECTED ? fault : FarmBotFault.NONE);
     }
 
     private void dropTarget(ServerLevel level) {
