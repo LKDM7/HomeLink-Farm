@@ -29,7 +29,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * Phase 5: coverage, the +20% growth bonus (never stacked), hydration and monitoring.
+ * Phase 5: coverage, the +33% growth bonus (never stacked), hydration and monitoring.
  * Layout: pump at (1,2,1), pipes along z = 1 at y = 2, sprinklers at y = 3 on x = 2, 4, ...;
  * each sprinkler covers x +-2, z -1..3, y 1..4, so crops at y = 2 in rows z = 2..3 are covered.
  */
@@ -192,7 +192,7 @@ public final class IrrigationGrowthGameTests {
             IrrigationCoverage coverage = manager.coverage();
             long coverageNanos = System.nanoTime() - start;
             helper.assertTrue(coverage.irrigatedSize() >= 40 * 80, "Not all 40 sprinklers irrigate yet: " + coverage.irrigatedSize());
-            double expected = GrowthBonus.expectedExtraTicks(0.20, level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING), IrrigationGrowth.INTERVAL);
+            double expected = GrowthBonus.expectedExtraTicks(GrowthBonus.DEFAULT_BONUS, level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING), IrrigationGrowth.INTERVAL);
             start = System.nanoTime();
             IrrigationGrowth.apply(level, coverage, expected);
             long growthNanos = System.nanoTime() - start;

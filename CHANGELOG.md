@@ -1,5 +1,9 @@
 # Modifications non publiées
 
+## Irrigation
+
+- Le bonus de croissance de l'irrigation passe de **+20 %** à **+33 %** par défaut (`irrigation.irrigationGrowthBonus` = 0.33) : les cultures irriguées poussent 1,33 × plus vite en moyenne. Un fichier de config serveur déjà généré garde sa valeur.
+
 ## Tuyaux et objet FarmBot
 
 - Les arroseurs éclairent comme une torche (niveau de lumière 14), quel que soit leur état : les cultures voisines ont assez de lumière pour pousser la nuit.

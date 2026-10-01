@@ -397,9 +397,9 @@ final class PlayerSmoke {
             measuring = false;
             double ratio = IRRIGATED_TICKS.get() / (double) Math.max(1, CONTROL_TICKS.get());
             double expectedControl = 52.0 * MEASURE_RANDOM_TICK_SPEED / 4096 * MEASURE_TICKS;
-            HomeLinkFarm.LOGGER.info("HOMELINK_FARM_PLAYER growth opportunities irrigated={} control={} ratio={} (expected control ~{}, ratio 1.20)",
+            HomeLinkFarm.LOGGER.info("HOMELINK_FARM_PLAYER growth opportunities irrigated={} control={} ratio={} (expected control ~{}, ratio 1.33)",
                     IRRIGATED_TICKS.get(), CONTROL_TICKS.get(), String.format("%.3f", ratio), Math.round(expectedControl));
-            check(ratio > 1.12 && ratio < 1.28, "growth bonus ratio " + ratio + " is not ~1.20");
+            check(ratio > 1.24 && ratio < 1.42, "growth bonus ratio " + ratio + " is not ~1.33");
             mc().player.connection.sendCommand("gamerule randomTickSpeed 3");
         });
 

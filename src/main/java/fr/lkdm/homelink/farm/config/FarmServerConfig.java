@@ -82,9 +82,9 @@ public final class FarmServerConfig {
                         "Vertically it reaches 12 blocks below; up to 1 block above when standing, or its own level when hanging.")
                 .defineInRange("sprinklerRange", 2, 1, 4);
         IRRIGATION_GROWTH_BONUS = builder
-                .comment("Growth speed bonus of irrigated crops (0.20 = +20%). Never stacks between sprinklers.",
+                .comment("Growth speed bonus of irrigated crops (0.33 = +33%). Never stacks between sprinklers.",
                         "Implemented as extra vanilla random ticks; the randomTickSpeed game rule is never modified.")
-                .defineInRange("irrigationGrowthBonus", 0.20, 0.0, 1.0);
+                .defineInRange("irrigationGrowthBonus", 0.33, 0.0, 1.0);
         PIPE_OXIDATION_DAYS = builder
                 .comment("In-game days (in loaded chunks, at the default randomTickSpeed) for an unwaxed copper pipe",
                         "to go from new to fully oxidized. Oxidation is cosmetic: every stage carries water.")

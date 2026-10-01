@@ -5,7 +5,7 @@ Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer
 **Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.11.0+ (obligatoire).**
 
 ```text
-Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +20 % de croissance
+Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +33 % de croissance
 Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replante → revient → décharge → se recharge   (Farm Controller facultatif)
 ```
 
@@ -79,10 +79,10 @@ Carré de `2 × sprinklerRange + 1` blocs centré sur l'arroseur (**5 × 5** par
 
 Un arroseur actif hydrate aussi la terre labourée de sa zone, via le `FarmlandWaterManager` de NeoForge.
 
-### Bonus de croissance : +20 %
+### Bonus de croissance : +33 %
 
 - Vanilla donne à chaque bloc en moyenne `randomTickSpeed / 4096` tick aléatoire par tick de jeu. La chance de pousser par tick aléatoire est fixe.
-- Toutes les 20 ticks, chaque culture irriguée et compatible reçoit en moyenne `0,20 × randomTickSpeed × 20 / 4096` tick aléatoire **supplémentaire** (0,00293 avec les valeurs par défaut). C'est exactement +20 % d'occasions de croissance, donc une croissance 1,20 × plus rapide en moyenne. Toutes les règles vanilla (lumière, terre, événements NeoForge) s'appliquent à ces ticks.
+- Toutes les 20 ticks, chaque culture irriguée et compatible reçoit en moyenne `0,33 × randomTickSpeed × 20 / 4096` tick aléatoire **supplémentaire** (0,00483 avec les valeurs par défaut). C'est exactement +33 % d'occasions de croissance, donc une croissance 1,33 × plus rapide en moyenne. Toutes les règles vanilla (lumière, terre, événements NeoForge) s'appliquent à ces ticks.
 - Seules les cultures couvertes par un arroseur d'un réseau ACTIVE, et situées dans des chunks où les ticks aléatoires ont lieu, sont concernées.
 - **Aucun cumul** : la couverture est une union de positions, et une culture sous 2 ou 3 arroseurs n'est tirée qu'une fois.
 - Le gamerule `randomTickSpeed` est seulement lu, jamais modifié. Le bonus ne touche ni les drops, ni Fortune, ni les quantités.
@@ -188,7 +188,7 @@ Modifiable en jeu : *Mods → HomeLink Farm → Configurer* (en solo), ou dans l
 | `irrigation.maxSprinklersPerPump` | **5** | Règle officielle : 5 arroseurs par pompe |
 | `irrigation.maxNetworkNodes` | 1024 | Taille maximale d'un réseau |
 | `irrigation.sprinklerRange` | 2 | Portée horizontale (2 = 5 × 5) |
-| `irrigation.irrigationGrowthBonus` | **0.20** | Bonus de croissance (+20 %) |
+| `irrigation.irrigationGrowthBonus` | **0.33** | Bonus de croissance (+33 %) |
 | `irrigation.pipeOxidationDays` | 100 | Jours de jeu pour qu'un tuyau non ciré soit totalement oxydé |
 | `farmbot.farmbotBatteryCapacity` | 1000 | Énergie d'une batterie pleine (mécanique interne, pas des FE) |
 | `farmbot.farmbotLowBatteryThreshold` | **20** | Pourcentage de retour à la station |
@@ -227,7 +227,7 @@ CropAdapters.register(new MyCropAdapter()); // pendant le setup ; les adaptateur
 ./gradlew.bat runPersistence -PpersistencePass=read        # ...puis le relit dans un nouveau processus
 ./gradlew.bat runClientSmoke                               # vrai client : scénario complet + captures d'écran
 ./gradlew.bat runClientSmoke -PsmokeLanguage=fr_fr         # le même scénario, jeu en français
-./gradlew.bat runClientSmoke -PsmokeScenario=player        # vrai client joué via les entrées joueur (clics, touche I, sauvegarde/rechargement, mesure du +20 %)
+./gradlew.bat runClientSmoke -PsmokeScenario=player        # vrai client joué via les entrées joueur (clics, touche I, sauvegarde/rechargement, mesure du +33 %)
 ./gradlew.bat runClientSmoke -PsmokeScenario=help -PsmokeLanguage=fr_fr # guides des trois machines, défilement, redimensionnement et conservation du nom
 ./gradlew.bat runClientSmoke -PsmokeScenario=overlays -PsmokeLanguage=fr_fr # terrain en terrasses, irrigation active/arrêtée/en panne, zones et diagnostic
 ./gradlew.bat runClientSmoke -PsmokeScenario=farmbot       # FarmBot à quai, écrans de la station, récolte réelle d'un champ, voyant de nuit

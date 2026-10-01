@@ -77,7 +77,7 @@ class FarmControllerDeviceTest {
         assertEquals(new Percentage(95.6), value(device, FarmIds.IRRIGATION_COVERAGE));
         assertEquals(367, value(device, FarmIds.IRRIGATED_CROPS));
         assertEquals(6, value(device, FarmIds.PROBLEM_COUNT));
-        assertEquals(new Percentage(20), value(device, FarmIds.GROWTH_BONUS));
+        assertEquals(new Percentage(33), value(device, FarmIds.GROWTH_BONUS));
     }
 
     @Test
