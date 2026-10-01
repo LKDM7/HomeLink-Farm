@@ -2,7 +2,7 @@
 
 Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer, optimiser et connecter une exploitation Minecraft. Aucune ressource n'est jamais créée ; seul le **FarmBot**, un robot que le joueur fabrique et installe, récolte et replante, en se déplaçant réellement jusqu'aux cultures.
 
-**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.11.0+ (obligatoire).**
+**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.12.0+ (obligatoire).**
 
 ```text
 Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +33 % de croissance
@@ -11,10 +11,10 @@ Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replant
 
 ## Installation
 
-1. Installer **HomeCore 1.11.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.3.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
+1. Installer **HomeCore 1.12.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.4.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
 2. Installer `homelink_farm-1.3.0.jar` dans `mods` côté client et serveur.
 
-Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.11.0 et HomeLink Energy 0.3.0 à côté du projet et activer les composites locaux :
+Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.12.0 et HomeLink Energy 0.4.0 à côté du projet et activer les composites locaux :
 
 ```powershell
 ./gradlew.bat -PuseLocalDependencies=true build          # JAR dans build/libs + tests JUnit
@@ -158,7 +158,7 @@ Un appareil se rattache à un **HomeNetwork** via le bouton *HomeLink : réseau*
 | `homelink_farm:farmbot_station` | `farmbot_installed`, `farmbot_status`, `farmbot_battery`, `farmbot_storage`, `farmbot_harvested`, `farmbot_current_target`, `station_output_usage` | `start`, `pause`, `return_home` (boutons, CONTROL), `homecore:power`, `homecore:rename` | `farmbot_low_battery`, `farmbot_storage_full`, `farmbot_stuck`, `farmbot_output_blocked`, `farmbot_returned`, `farmbot_harvest_complete` |
 | `homelink_farm:irrigation_pump` | `pump_status`, `enabled`, `water_available`, `sprinklers_connected`, `sprinkler_capacity`, `irrigated_crops`, `over_capacity` | `homecore:power` (toggle, CONTROL), `homecore:rename` | `pump_over_capacity`, `irrigation_failure`, `irrigation_restored` |
 
-Les identifiants sont dans l'espace de noms `homelink_farm`, sauf les actions standard de HomeCore 1.11.0 : `homecore:power` (interface `Switchable` ; même état que Start/Pause pour la station, que le bouton de la pompe) et `homecore:rename` (interface `Renamable`, permission CONFIGURE, 32 caractères conservés). Les événements sont émis **sur transition uniquement** :
+Les identifiants sont dans l'espace de noms `homelink_farm`, sauf les actions standard de HomeCore 1.12.0 : `homecore:power` (interface `Switchable` ; même état que Start/Pause pour la station, que le bouton de la pompe) et `homecore:rename` (interface `Renamable`, permission CONFIGURE, 32 caractères conservés). Les événements sont émis **sur transition uniquement** :
 - `crop_ready` : au franchissement de 90 % de cultures prêtes, réarmé sous 70 % ;
 - `problem_detected` : quand le nombre de problèmes passe de 0 à plus de 0 ;
 - `pump_over_capacity` : par exemple au passage de 5 à 6 arroseurs.
