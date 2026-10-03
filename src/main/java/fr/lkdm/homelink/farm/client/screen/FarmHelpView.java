@@ -1,5 +1,8 @@
 package fr.lkdm.homelink.farm.client.screen;
 
+import fr.lkdm.homecore.api.client.ui.HomeLinkTheme;
+import fr.lkdm.homecore.api.client.ui.HomeLinkUi;
+
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
@@ -27,7 +30,7 @@ final class FarmHelpView {
             for (String row : paragraph.split("\n")) {
                 boolean heading = row.startsWith("# ");
                 var text = Component.literal(heading ? row.substring(2) : row)
-                        .withStyle(style -> style.withColor(heading ? FarmTheme.ACCENT : FarmTheme.TEXT).withBold(heading));
+                        .withStyle(style -> style.withColor(heading ? HomeLinkTheme.ACCENT : HomeLinkTheme.TEXT).withBold(heading));
                 lines.addAll(font.split(text, width - 28));
             }
         }
@@ -59,18 +62,18 @@ final class FarmHelpView {
     }
 
     void render(GuiGraphics graphics) {
-        FarmTheme.panel(graphics, x, y, width, height);
+        HomeLinkUi.panel(graphics, x, y, width, height);
         graphics.enableScissor(x + 4, y + 4, x + width - 4, y + height - 4);
         for (int i = offset; i < Math.min(lines.size(), offset + visibleLines()); i++) {
-            graphics.drawString(font, lines.get(i), x + 10, y + 6 + (i - offset) * LINE_HEIGHT, FarmTheme.TEXT, false);
+            graphics.drawString(font, lines.get(i), x + 10, y + 6 + (i - offset) * LINE_HEIGHT, HomeLinkTheme.TEXT, false);
         }
         graphics.disableScissor();
         if (maxOffset() > 0) {
             int track = height - 12;
             int thumb = Math.max(8, track * visibleLines() / lines.size());
             int top = y + 6 + (track - thumb) * offset / maxOffset();
-            graphics.fill(x + width - 6, y + 6, x + width - 4, y + height - 6, FarmTheme.LINE);
-            graphics.fill(x + width - 6, top, x + width - 4, top + thumb, FarmTheme.ACCENT);
+            graphics.fill(x + width - 6, y + 6, x + width - 4, y + height - 6, HomeLinkTheme.LINE);
+            graphics.fill(x + width - 6, top, x + width - 4, top + thumb, HomeLinkTheme.ACCENT);
         }
     }
 }

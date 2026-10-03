@@ -2,7 +2,7 @@
 
 Module agricole de l'écosystème HomeLink : surveiller, diagnostiquer, irriguer, optimiser et connecter une exploitation Minecraft. Aucune ressource n'est jamais créée ; seul le **FarmBot**, un robot que le joueur fabrique et installe, récolte et replante, en se déplaçant réellement jusqu'aux cultures.
 
-**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.13.0+ (obligatoire).**
+**Minecraft 1.21.1 · NeoForge 21.1.250+ · Java 21 · HomeCore 1.14.0+ (obligatoire).**
 
 ```text
 Farm → Crop Monitor → Farm Controller → HomeCore        Water → Irrigation Pump → Copper Pipes → max 5 Sprinklers → +33 % de croissance
@@ -11,10 +11,10 @@ Crop Monitor(s) → FarmBot Station → FarmBot : roule → récolte → replant
 
 ## Installation
 
-1. Installer **HomeCore 1.13.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.5.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
+1. Installer **HomeCore 1.14.0** ([LKDM7/HomeCore](https://github.com/LKDM7/HomeCore)) et **HomeLink Energy 0.5.0** côté client et serveur. Le contrôleur, les pompes et les stations FarmBot implémentent `NetworkMember` : le Dashboard peut les lister dans sa zone radio et les ajouter à un réseau, avec le même rattachement que leur bouton HomeLink.
 2. Installer `homelink_farm-1.5.0.jar` dans `mods` côté client et serveur.
 
-Compilation depuis les sources (JDK 21) : utiliser les dépendances publiées, ou cloner HomeCore 1.13.0 et HomeLink Energy 0.5.0 à côté du projet et activer les composites locaux :
+Compilation depuis les sources (JDK 21) : cloner les sources compatibles de HomeCore 1.14.0 et HomeLink Energy 0.5.0 à côté du projet et activer les composites locaux. HomeCore 1.14.0 n'a pas été publié sur Maven dans ce chantier ; un push Git ne publie pas cet artefact :
 
 ```powershell
 ./gradlew.bat -PuseLocalDependencies=true build          # JAR dans build/libs + tests JUnit
@@ -145,6 +145,12 @@ Les couvertures superposées sont réunies ; une couverture active prend la prio
 Les zones du moniteur et du connecteur utilisent des coins lumineux et des pointillés animés : turquoise pour la zone surveillée, doré pour la sélection. « Voir zone » dure dix secondes, avec une apparition et une disparition progressives.
 
 ## Intégration HomeCore
+
+### Interface commune / Shared UI
+
+Les quatre écrans Farm et leurs aides utilisent le kit client public HomeLink de **HomeCore 1.14.0**, API **1.9.0**, dans `fr.lkdm.homecore.api.client.ui`. `FarmTheme` et `FarmButton` sont supprimés : `HomeLinkTheme` fournit les tokens, `HomeLinkUi` les panneaux, slots, voyants et jauges, `HomeLinkButton` les contrôles. Les boutons d'aide et d'overlay utilisent la sélection enfoncée officielle. Les associations, états Farm et couleurs des overlays du monde restent dans Farm.
+
+**Developer guidance (EN):** depend directly on HomeCore 1.14.0 / metadata `[1.14.0,2.0.0)` for new screens. Import the UI package exclusively in client code; use `HomeLinkUi.frame(...)` / `panel(...)` / `input(...)`, `HomeLinkButton.builder(...)`, `HomeLinkTheme.CONTROL_HEIGHT` and `HomeLinkScreenLayout.fit(...)`. Dashboard is unnecessary for any Farm UI, and future HomeLink Furnace uses the same kit. Preserve functional inventory geometry and keep domain mappings in `FarmStatusColors`. Local composites use compatible adjacent sources; API use does not automatically update from GitHub. See [migration details](docs/UI_MIGRATION.md).
 
 HomeLink Farm consomme uniquement l'API publique `fr.lkdm.homecore.api` : `DashboardAPI`, `DashboardDevice`, `DeviceMetric`, `DeviceAction`, `DeviceEvent` et `HomeNetworkManager`. Il ne dépend ni de HomeLink Dashboard, ni de HomeLink Tasks, ni de HomeLink Storage, ni de Holographique Map : ces mods lisent les données génériques via HomeCore.
 

@@ -6,6 +6,7 @@ import fr.lkdm.homelink.farm.blockentity.AbstractFarmDeviceBlockEntity;
 import fr.lkdm.homelink.farm.client.screen.FarmDeviceScreen;
 import fr.lkdm.homelink.farm.registry.ModBlocks;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.core.BlockPos;
 import org.lwjgl.glfw.GLFW;
@@ -31,9 +32,11 @@ final class HelpSmoke {
             step("open " + name, () -> true, () -> onServer(player ->
                     player.openMenu((AbstractFarmDeviceBlockEntity) player.level().getBlockEntity(POS), POS)));
             step("draft " + name, () -> Minecraft.getInstance().screen instanceof FarmDeviceScreen<?>, () -> nameBox().setValue("Draft help"));
+            step("main controls and focus", () -> true, HelpSmoke::verifyControls);
             pause(5);
             step("screen capture", () -> true, () -> screenshot("help_" + name + "_button"));
             step("open help", () -> true, () -> pressKey("gui.homelink_farm.help.button"));
+            step("help controls and focus", () -> true, HelpSmoke::verifyControls);
             pause(5);
             step("help top", () -> true, () -> {
                 var screen = screen();
@@ -63,6 +66,29 @@ final class HelpSmoke {
     }
 
     private static FarmDeviceScreen<?> screen() { return (FarmDeviceScreen<?>) Minecraft.getInstance().screen; }
+    private static void verifyControls() {
+        var screen = screen();
+        for (var child : screen.children()) {
+            if (!(child instanceof AbstractWidget widget) || !widget.visible) continue;
+            check(widget.getX() >= 0 && widget.getY() >= 0
+                    && widget.getX() + widget.getWidth() <= screen.width
+                    && widget.getY() + widget.getHeight() <= screen.height,
+                    "Farm control outside viewport: " + widget.getMessage().getString());
+        }
+        screen.setFocused(null);
+        var expected = screen.children().stream().filter(AbstractWidget.class::isInstance)
+                .map(AbstractWidget.class::cast).filter(widget -> widget.active && widget.visible).toList();
+        check(!expected.isEmpty(), "Farm screen has no active controls");
+        var visited = new java.util.HashSet<AbstractWidget>();
+        for (int i = 0; i < expected.size(); i++) {
+            screen.keyPressed(GLFW.GLFW_KEY_TAB, 0, 0);
+            check(screen.getFocused() instanceof AbstractWidget widget
+                    && widget.active && widget.visible && widget.isFocused(),
+                    "Farm keyboard focus did not reach an active control");
+            check(visited.add((AbstractWidget) screen.getFocused()), "Farm Tab cycle repeated a control before visiting all controls");
+        }
+        check(visited.containsAll(expected), "Farm Tab cycle skipped an active control");
+    }
     private static EditBox nameBox() {
         return screen().children().stream().filter(EditBox.class::isInstance).map(EditBox.class::cast).findFirst().orElseThrow();
     }

@@ -6,7 +6,7 @@ Boîtiers agricoles vert olive, châssis graphite, fixations en acier galvanisé
 
 - `farm_materials_source.png` : atlas source des quatre matériaux.
 - `../src/main/resources/assets/homelink_farm/textures/block/farm_materials.png` : version de jeu, 64 × 64 pixels, échantillonnée au centre des pixels sans interpolation. Quatre matériaux de 32 × 32 pixels, sans mipmaps personnalisés.
-- `../tools/refine_models.py` : génération des neuf modèles JSON partagés. Exécuter `uv run --python 3.12 python tools/refine_models.py` depuis le dépôt, ou utiliser un Python 3 déjà installé.
+- `../tools/refine_models.py` : maintenance des neuf modèles JSON partagés. Exécuter `uv run --python 3.12 python tools/refine_models.py` depuis le dépôt, ou utiliser un Python 3 déjà installé.
 
 Les variantes liées et les trois états hydrauliques héritent des modèles partagés. Les tuyaux gardent leurs textures de cuivre aux quatre stades d'oxydation, y compris les versions cirées. Les formes de sélection des appareils prennent en compte les nouveaux reliefs principaux.
 
@@ -20,4 +20,4 @@ Les variantes liées et les trois états hydrauliques héritent des modèles par
 
 Les boîtiers et leurs garnitures ne partagent plus de faces opaques superposées (z-fighting). Les UV de l'atlas sont projetés à une densité constante d'un pixel de texture par unité du modèle, au lieu d'étirer un carré de matériau sur chaque face. Les panneaux et masques lumineux gardent la projection Minecraft d'origine.
 
-`ModelAssetsTest` vérifie les faces coplanaires, la densité et les limites des UV de l'atlas, la résolution des références de textures et les dimensions des PNG et animations. Aucun nouveau bitmap n'a été généré pour cette correction : elle porte sur la géométrie et le placement des textures existantes.
+`ModelAssetsTest` vérifie les faces coplanaires, la densité et les limites des UV de l'atlas, la résolution des références de textures et les dimensions des PNG et animations. Cette correction porte sur la géométrie et le placement des textures existantes.

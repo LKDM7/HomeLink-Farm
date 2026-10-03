@@ -1,5 +1,13 @@
 # Changelog
 
+## Migration UI — sources courantes / Current sources
+
+- Farm reste en 1.5.0 et requiert désormais HomeCore 1.14.0 / API 1.9.0.
+- Les écrans et aides utilisent le kit client HomeCore ; `FarmTheme` et
+  `FarmButton` sont supprimés. Les overlays et états agricoles restent locaux.
+- **EN:** current sources use the shared HomeCore UI kit, without Dashboard;
+  artifact versions below describe their historical releases.
+
 ## 1.5.0
 
 - Compatibilité JEI et REI : Avec JEI (19.0 ou plus récent) ou REI (16.0 ou plus récent), chaque objet du mod a une page d'information (onglet « i » de JEI, « Information » de REI) qui explique son rôle, en français et en anglais. Les recettes de fabrication s'y affichent comme les autres. Ces deux mods restent facultatifs et côté client.

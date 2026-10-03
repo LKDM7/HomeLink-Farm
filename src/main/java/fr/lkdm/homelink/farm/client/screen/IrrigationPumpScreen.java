@@ -34,13 +34,13 @@ public class IrrigationPumpScreen extends FarmDeviceScreen<IrrigationPumpBlockEn
     @Override
     protected HeaderStatus headerStatus(IrrigationPumpBlockEntity pump) {
         var status = pump.snapshot().status();
-        return new HeaderStatus(status.label(), FarmTheme.pumpStatus(status));
+        return new HeaderStatus(status.label(), FarmStatusColors.pumpStatus(status));
     }
 
     @Override
     protected void collectLines(IrrigationPumpBlockEntity pump, List<Line> lines) {
         PumpSnapshot snapshot = pump.snapshot();
-        lines.add(line("gui.homelink_farm.status", snapshot.status().label(), FarmTheme.pumpStatus(snapshot.status())));
+        lines.add(line("gui.homelink_farm.status", snapshot.status().label(), FarmStatusColors.pumpStatus(snapshot.status())));
         lines.add(line("gui.homelink_farm.pump.enabled", Component.translatable(pump.enabled() ? "gui.homelink_farm.yes" : "gui.homelink_farm.no"),
                 pump.enabled() ? GOOD : WARN));
         lines.add(line("gui.homelink_farm.pump.redstone", pump.redstoneMode().label(), TEXT));

@@ -1,5 +1,9 @@
 package fr.lkdm.homelink.farm.client.screen;
 
+import fr.lkdm.homecore.api.client.ui.HomeLinkTheme;
+import fr.lkdm.homecore.api.client.ui.HomeLinkUi;
+import fr.lkdm.homecore.api.client.ui.HomeLinkButton;
+
 import fr.lkdm.homelink.farm.blockentity.AbstractFarmDeviceBlockEntity;
 import fr.lkdm.homelink.farm.client.overlay.IrrigationOverlay;
 import fr.lkdm.homelink.farm.farm.DeviceNames;
@@ -21,24 +25,24 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Device screen in the HomeLink Dashboard style: header with status light, rename field,
+ * Device screen using the shared HomeLink UI: header with status light, rename field,
  * read-only status lines in a recessed panel and optional command buttons at the bottom.
  * Values come from the client copy of the block entity (display only; the server decides).
  */
 public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> extends AbstractContainerScreen<FarmDeviceMenu> {
-    protected static final int TEXT = FarmTheme.TEXT;
-    protected static final int LABEL = FarmTheme.MUTED;
-    protected static final int GOOD = FarmTheme.ONLINE;
-    protected static final int WARN = FarmTheme.WARNING;
-    protected static final int BAD = FarmTheme.OFFLINE;
+    protected static final int TEXT = HomeLinkTheme.TEXT;
+    protected static final int LABEL = HomeLinkTheme.MUTED;
+    protected static final int GOOD = HomeLinkTheme.ONLINE;
+    protected static final int WARN = HomeLinkTheme.WARNING;
+    protected static final int BAD = HomeLinkTheme.OFFLINE;
     /** Every screen stays under 240 scaled pixels high, the smallest GUI height "auto" scale allows. */
     protected static final int WIDTH = 270;
-    protected static final int HEADER_HEIGHT = 24;
+    protected static final int HEADER_HEIGHT = HomeLinkTheme.HEADER_HEIGHT;
     protected static final int LINE_HEIGHT = 10;
     /** Top of the status panel; its text starts 4 pixels lower. */
     protected static final int PANEL_TOP = 56;
     protected static final int LINES_TOP = PANEL_TOP + 4;
-    protected static final int BUTTON_HEIGHT = 18;
+    protected static final int BUTTON_HEIGHT = HomeLinkTheme.CONTROL_HEIGHT;
     /** Vertical distance between two rows of buttons. */
     protected static final int BUTTON_ROW = 21;
     /** Minimum x of the value column; it moves right when a (translated) label is longer. */
@@ -78,7 +82,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         networkButton = null;
         overlayToggle = false;
         Button helpButton = button(Component.translatable("gui.homelink_farm.help.button"), imageWidth - 30, 3, 20, this::toggleHelp);
-        ((FarmButton) helpButton).accentWhen(() -> helpOpen);
+        ((HomeLinkButton) helpButton).selectedWhen(() -> helpOpen);
         helpButton.setTooltip(Tooltip.create(Component.translatable("gui.homelink_farm.help.tooltip")));
         if (helpOpen) {
             help = new FarmHelpView(font, helpContent(), leftPos + 10, topPos + 43, imageWidth - 20,
@@ -91,7 +95,8 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
             refreshHelpButtons();
             return;
         }
-        nameBox = new EditBox(font, leftPos + 10, topPos + 30, 170, 16, Component.translatable("gui.homelink_farm.name"));
+        nameBox = HomeLinkUi.input(new EditBox(font, leftPos + 10, topPos + 30, 170,
+                HomeLinkTheme.CONTROL_HEIGHT, Component.translatable("gui.homelink_farm.name")));
         nameBox.setMaxLength(DeviceNames.MAX_LENGTH);
         if (draft != null) nameBox.setValue(draft);
         else device().ifPresent(device -> nameBox.setValue(device.customName()));
@@ -120,13 +125,13 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
     protected void addDeviceWidgets() {
     }
 
-    /** Dashboard-style button at (x, y) relative to the window. */
+    /** Shared HomeLink button at (x, y) relative to the window. */
     protected Button button(Component label, int x, int y, int width, Runnable action) {
         return button(label, x, y, width, BUTTON_HEIGHT, action);
     }
 
     protected Button button(Component label, int x, int y, int width, int height, Runnable action) {
-        return addRenderableWidget(FarmButton.builder(label, pressed -> action.run())
+        return addRenderableWidget(HomeLinkButton.builder(label, pressed -> action.run())
                 .bounds(leftPos + x, topPos + y, width, height).build());
     }
 
@@ -134,10 +139,10 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
         return button(label, x, y, width, () -> sendCommand(command, argument));
     }
 
-    /** "Show irrigation" toggle, gold while the overlay is on (whether toggled here or with its key). */
+    /** "Show irrigation" toggle, pressed with copper text while its world overlay is on. */
     protected Button overlayButton(int x, int y, int width) {
         Button button = button(Component.translatable("gui.homelink_farm.overlay.toggle"), x, y, width, IrrigationOverlay::toggle);
-        ((FarmButton) button).accentWhen(IrrigationOverlay::enabled);
+        ((HomeLinkButton) button).selectedWhen(IrrigationOverlay::enabled);
         overlayToggle = true;
         return button;
     }
@@ -248,16 +253,16 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        FarmTheme.window(graphics, leftPos, topPos, imageWidth, imageHeight, HEADER_HEIGHT);
+        HomeLinkUi.window(graphics, leftPos, topPos, imageWidth, imageHeight, HEADER_HEIGHT);
         if (helpOpen) {
             help.render(graphics);
             return;
         }
-        FarmTheme.divider(graphics, leftPos + 10, topPos + 52, imageWidth - 20);
-        FarmTheme.divider(graphics, leftPos + 10, topPos + buttonsTop() - 4, imageWidth - 20);
+        HomeLinkUi.separator(graphics, leftPos + 10, topPos + 52, imageWidth - 20);
+        HomeLinkUi.separator(graphics, leftPos + 10, topPos + buttonsTop() - 4, imageWidth - 20);
         if (!showStatus()) return;
         int count = device().map(device -> lines(device).size()).orElse(1);
-        FarmTheme.panel(graphics, leftPos + 10, topPos + PANEL_TOP, imageWidth - 20, count * LINE_HEIGHT + 7);
+        HomeLinkUi.panel(graphics, leftPos + 10, topPos + PANEL_TOP, imageWidth - 20, count * LINE_HEIGHT + 7);
     }
 
     @Override
@@ -267,14 +272,14 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
                 .orElse(new HeaderStatus(Component.translatable("gui.homelink_farm.unavailable"), BAD));
         String statusText = font.plainSubstrByWidth(status.text().getString(), 90);
         int statusX = imageWidth - 38 - font.width(statusText);
-        FarmTheme.statusLight(graphics, statusX - 12, 8, status.color());
+        HomeLinkUi.statusDot(graphics, statusX - 12, 8, status.color());
         graphics.drawString(font, statusText, statusX, 8, LABEL, false);
         Component heading = device.map(AbstractFarmDeviceBlockEntity::displayName).orElse(title);
         boolean renamed = device.filter(named -> !named.customName().isEmpty()).isPresent();
         graphics.drawString(font, font.plainSubstrByWidth(heading.getString(), statusX - 30), 14, 8,
-                renamed ? FarmTheme.ACCENT : TEXT, false);
+                renamed ? HomeLinkTheme.ACCENT : TEXT, false);
         if (helpOpen) {
-            graphics.drawString(font, Component.translatable("gui.homelink_farm.help.title"), 12, 30, FarmTheme.ACCENT, false);
+            graphics.drawString(font, Component.translatable("gui.homelink_farm.help.title"), 12, 30, HomeLinkTheme.ACCENT, false);
             return;
         }
         if (!showStatus()) return;
@@ -292,7 +297,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
             graphics.drawString(font, line.value(), valueX, y, line.color(), false);
             if (line.bar() >= 0) {
                 int barX = valueX + valueWidth + 6;
-                FarmTheme.gauge(graphics, barX, y + 2, imageWidth - 16 - barX, line.bar(), line.color());
+                HomeLinkUi.gauge(graphics, barX, y + 2, imageWidth - 16 - barX, line.bar(), line.color());
             }
             y += LINE_HEIGHT;
         }
@@ -322,7 +327,7 @@ public abstract class FarmDeviceScreen<T extends AbstractFarmDeviceBlockEntity> 
                 sendRename();
                 return true;
             }
-            if (keyCode != GLFW.GLFW_KEY_ESCAPE) {
+            if (keyCode != GLFW.GLFW_KEY_ESCAPE && keyCode != GLFW.GLFW_KEY_TAB) {
                 // Keep typed letters (e.g. the inventory key) from closing the screen.
                 return nameBox.keyPressed(keyCode, scanCode, modifiers) || nameBox.canConsumeInput();
             }

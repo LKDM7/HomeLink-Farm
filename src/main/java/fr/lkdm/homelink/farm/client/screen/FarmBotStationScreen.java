@@ -1,5 +1,7 @@
 package fr.lkdm.homelink.farm.client.screen;
 
+import fr.lkdm.homecore.api.client.ui.HomeLinkUi;
+
 import fr.lkdm.homelink.farm.blockentity.FarmBotStationBlockEntity;
 import fr.lkdm.homelink.farm.entity.FarmBotEntity;
 import fr.lkdm.homelink.farm.farm.bot.FarmBotFault;
@@ -103,7 +105,7 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
     @Override
     protected HeaderStatus headerStatus(FarmBotStationBlockEntity station) {
         return station.snapshot()
-                .map(robot -> new HeaderStatus(robot.state().label(), FarmTheme.farmBotStatus(robot.state())))
+                .map(robot -> new HeaderStatus(robot.state().label(), FarmStatusColors.farmBotStatus(robot.state())))
                 .orElse(new HeaderStatus(Component.translatable("gui.homelink_farm.farmbot.none"), LABEL));
     }
 
@@ -118,7 +120,7 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
             lines.add(line("gui.homelink_farm.farmbot.robot", Component.literal(bot.name())));
             Component status = bot.fault() == FarmBotFault.NONE ? bot.state().label()
                     : Component.translatable("gui.homelink_farm.farmbot.status_fault", bot.state().label(), bot.fault().label());
-            lines.add(line("gui.homelink_farm.status", status, FarmTheme.farmBotStatus(bot.state())));
+            lines.add(line("gui.homelink_farm.status", status, FarmStatusColors.farmBotStatus(bot.state())));
             int low = fr.lkdm.homelink.farm.config.FarmServerConfig.FARMBOT_LOW_BATTERY_THRESHOLD.get();
             lines.add(bar("gui.homelink_farm.farmbot.battery", bot.battery() / 100F, bot.battery() <= low ? BAD : bot.battery() < 50 ? WARN : GOOD));
             lines.add(new Line(Component.translatable("gui.homelink_farm.farmbot.storage"),
@@ -138,7 +140,7 @@ public class FarmBotStationScreen extends FarmDeviceScreen<FarmBotStationBlockEn
         super.renderBg(graphics, partialTick, mouseX, mouseY);
         if (!outputView || isHelpOpen()) return;
         for (var slot : menu.slots) {
-            if (slot.isActive()) FarmTheme.slot(graphics, leftPos + slot.x, topPos + slot.y);
+            if (slot.isActive()) HomeLinkUi.slot(graphics, leftPos + slot.x, topPos + slot.y);
         }
     }
 
