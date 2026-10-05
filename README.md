@@ -248,3 +248,7 @@ Les GameTests, le smoke client (captures dans `build/client-smoke/screenshots`) 
 - La vue irrigation affiche au plus 64 problèmes par moniteur et 256 arroseurs.
 - Pas d'Advanced Sprinkler ni d'Irrigation Tank en V1.
 - Le transport HomeCore envoie des textes : ils sont traduits en solo et restent en anglais sur un serveur dédié. Les identifiants de métriques permettent de les retraduire côté Dashboard.
+
+## Licence
+
+Tous droits réservés © 2026 LKDM. Le code source est visible à titre de référence uniquement ; toute copie, modification ou redistribution nécessite une autorisation écrite. Voir [LICENSE](LICENSE).
